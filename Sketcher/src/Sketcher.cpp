@@ -40,6 +40,40 @@ void Sketcher::setupUI() {
     mCircleTool->setText("Circle");
     mToolBar->addWidget(mCircleTool);
 
+    mInstructorLabel = new QLabel(mCentralWidget);
+    mInstructorLabel->setText("Select a tool to start drawing.");
+    mCentralgridWidget->addWidget(mInstructorLabel, 0, 0, 1, 2);  
 
+    mXLineEdit = new QLineEdit(mCentralWidget);
+    mXLineEdit->setPlaceholderText("X");
+    mCentralgridWidget->addWidget(mXLineEdit, 1, 0);  
+
+    mYLineEdit = new QLineEdit(mCentralWidget);
+    mYLineEdit->setPlaceholderText("Y");
+    mCentralgridWidget->addWidget(mYLineEdit, 1, 1);
+
+    mLabel = new QLabel(mCentralWidget);
+    mLabel->setText("Coordinates:");
+    mCentralgridWidget->addWidget(mLabel, 3, 0, 1, 2); 
+
+    mEnterButton = new QPushButton("Enter", mCentralWidget);
+    mCentralgridWidget->addWidget(mEnterButton, 2, 0, 1, 1);
+
+    connect(mPointTool, &QToolButton::clicked, this, [=]() {
+        mInstructorLabel->setText("Enter X and Y coordinates for the point.");
+    });
+	
+    connect(mEnterButton, &QPushButton::clicked, this, [=]() {
+        bool okX, okY;
+        double x = mXLineEdit->text().toDouble(&okX);
+        double y = mYLineEdit->text().toDouble(&okY);
+
+        if (okX && okY) {
+            mLabel->setText(QString("Point(%1, %2)").arg(x).arg(y));
+        }
+        else {
+            mLabel->setText("Invalid input. Please enter valid numbers.");
+        }
+    });
 
 }

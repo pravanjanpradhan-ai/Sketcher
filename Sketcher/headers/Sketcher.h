@@ -23,4 +23,9 @@ public:
     QToolButton* mTriangleTool;
     QToolButton* mRectabgleTool;
     QToolButton* mCircleTool;
+	QLineEdit* mXLineEdit;
+	QLineEdit* mYLineEdit;
+	QLabel* mLabel;
+    QLabel* mInstructorLabel;
+	QPushButton* mEnterButton;
 };
