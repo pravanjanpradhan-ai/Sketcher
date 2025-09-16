@@ -156,7 +156,12 @@
   <ItemGroup>
     <ClInclude Include="Exports.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="header\Circle.h" />
+    <ClInclude Include="header\Line.h" />
     <ClInclude Include="header\Point.h" />
+    <ClInclude Include="header\Rectangles.h" />
+    <ClInclude Include="header\Shape.h" />
+    <ClInclude Include="header\Triangle.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SketcherGeometryEngine.h" />
   </ItemGroup>
@@ -169,7 +174,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SketcherGeometryEngine.cpp" />
+    <ClCompile Include="src\Circle.cpp" />
+    <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\Point.cpp" />
+    <ClCompile Include="src\Rectangles.cpp" />
+    <ClCompile Include="src\Shape.cpp" />
+    <ClCompile Include="src\Triangle.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

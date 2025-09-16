@@ -1,4 +1,5 @@
 #pragma once
+#include "framework.h"
 
 class Point {
 public:
@@ -6,6 +7,6 @@ public:
     double y;
 
 public:
-    Point(double a,double b);
-    Point(){}
+    Point(double a, double b);
+    ~Point() {}
 };

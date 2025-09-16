@@ -1,4 +1,4 @@
-#include "Exports.h"
+#include "framework.h"
 
 // This class is exported from the dll
 class SKETCHERGEOMETRYENGINE_API CSketcherGeometryEngine {

@@ -21,10 +21,14 @@ public:
     QToolButton* mPointTool;
     QToolButton* mLineTool;
     QToolButton* mTriangleTool;
-    QToolButton* mRectabgleTool;
+    QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
 	QLineEdit* mXLineEdit;
 	QLineEdit* mYLineEdit;
+    QLineEdit* mXLineEdit2;
+    QLineEdit* mYLineEdit2;
+    QLineEdit* mXLineEdit3;
+    QLineEdit* mYLineEdit3;
 	QLabel* mLabel;
     QLabel* mInstructorLabel;
 	QPushButton* mEnterButton;
