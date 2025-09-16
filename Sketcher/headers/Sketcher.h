@@ -1,6 +1,11 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
+#include <vector>
+#include "Point.h"
+
+
+
 
 
 class Sketcher : public QMainWindow
@@ -21,11 +26,16 @@ public:
     QToolButton* mPointTool;
     QToolButton* mLineTool;
     QToolButton* mTriangleTool;
-    QToolButton* mRectabgleTool;
+    QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
-	QLineEdit* mXLineEdit;
-	QLineEdit* mYLineEdit;
-	QLabel* mLabel;
-    QLabel* mInstructorLabel;
-	QPushButton* mEnterButton;
+	QLineEdit* mX1LineEdit;
+	QLineEdit* mY1LineEdit;
+    QLineEdit* mX2LineEdit;
+    QLineEdit* mY2LineEdit;
+    QLineEdit* mX3LineEdit;
+    QLineEdit* mY3LineEdit;
+	QLabel* mShapeoutput;
+    QString printout(std::vector<Point> p);
+
+
 };
