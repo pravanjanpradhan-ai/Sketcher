@@ -1,10 +1,11 @@
 #pragma once
+#include "Exports.h"
 #include "Shape.h"
 #include "Point.h"
 #include "FileWrite.h"
 #include "Line.h"
 
-class Circle : public Shape { // Inheritance
+class SKETCHERGEOMETRYENGINE_API Circle : public Shape { // Inheritance
 private:
     double radius;
     Point p1;

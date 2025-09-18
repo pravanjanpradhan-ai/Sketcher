@@ -7,7 +7,7 @@ Circle::Circle(Point p1,Point p2) : Shape("Circle"),p1(p1), p2(p2),l1(p1,p2) {
    radius=l1.length();
 }
 
-const int numPoints = 3600;
+const int numPoints = 800;
 const double angleStep = 2 * 3.14 / numPoints;
 
 double Circle::area() const {
