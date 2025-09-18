@@ -1,8 +1,8 @@
 #pragma once
+#include "Exports.h"
 #include <fstream>
 #include <vector>
 #include "Point.h"
-
 
 
 
