@@ -2,16 +2,12 @@
 #include "Sketcher.h"
 #include <QString>
 #include "Point.h"
-#include "Point.cpp"
-#include "Line.cpp"
-#include "Line.h"
 #include "Shape.h"
-#include "Shape.cpp"
+#include "Line.h"
 #include "Circle.h"
-#include "Circle.cpp"
 #include "Rectangle.h"
-#include "Rectangle.cpp"
-#include "Triangle.cpp"
+#include "Triangle.h"
+
 
 
 Sketcher::Sketcher(QWidget* parent)

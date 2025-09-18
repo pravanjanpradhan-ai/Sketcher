@@ -6,7 +6,7 @@
 
 
 
-class FileWrite
+class SKETCHERGEOMETRYENGINE_API FileWrite
 {
 public:
     FileWrite();

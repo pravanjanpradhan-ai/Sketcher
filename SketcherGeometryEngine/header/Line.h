@@ -1,9 +1,10 @@
 #pragma once
+#include "Exports.h"
 #include "Shape.h"
 #include "Point.h"
 #include "FileWrite.h"
 
-class Line : public Shape {
+class SKETCHERGEOMETRYENGINE_API Line : public Shape {
 private:
     Point p1;
     Point p2;

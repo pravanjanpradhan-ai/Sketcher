@@ -1,6 +1,6 @@
 #pragma once
-
-class Point {
+#include "Exports.h"
+class SKETCHERGEOMETRYENGINE_API Point {
 public:
     double x; 
     double y;

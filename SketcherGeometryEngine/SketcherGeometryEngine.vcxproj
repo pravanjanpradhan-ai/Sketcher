@@ -175,6 +175,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SketcherGeometryEngine.cpp" />
+    <ClCompile Include="src\Circle.cpp" />
     <ClCompile Include="src\FileWrite.cpp" />
     <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\Point.cpp" />
