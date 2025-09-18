@@ -2,8 +2,8 @@
 #include "Sketcher.h"
 #include <QString>
 #include "Point.h"
-#include "Shape.h"
 #include "Line.h"
+#include "Shape.h"
 #include "Circle.h"
 #include "Rectangle.h"
 #include "Triangle.h"
@@ -27,7 +27,70 @@ QString Sketcher::printout(std::vector<Point> p) {
     for (const auto& point : p) {
         solution.append("X: ").append(QString::number(point.x)).append(" Y: ").append(QString::number(point.y)).append("\n");
     }
-    return solution;
+	return solution;
+
+}
+void Sketcher::onPointToolClicked()
+{
+    double x = mX1LineEdit->text().toDouble();
+    double y = mY1LineEdit->text().toDouble();
+    Point p1(x, y);
+    QString solution = QString("X: ").append(QString::number(p1.x)).append(" Y: ").append(QString::number(p1.y));
+    mShapeoutput->setText(solution);
+}
+void Sketcher::onLineToolClicked()
+{
+    double x1 = mX1LineEdit->text().toDouble();
+    double y1 = mY1LineEdit->text().toDouble();
+    double x2 = mX2LineEdit->text().toDouble();
+    double y2 = mY2LineEdit->text().toDouble();
+
+    Point p1(x1, y1);
+    Point p2(x2, y2);
+    Line l1(p1, p2);
+    std::vector<Point> coord = l1.getCoordinates();
+    mShapeoutput->setText(Sketcher::printout(coord));
+}
+void Sketcher::onTriangleToolClicked()
+{
+    double x1 = mX1LineEdit->text().toDouble();
+    double y1 = mY1LineEdit->text().toDouble();
+    double x2 = mX2LineEdit->text().toDouble();
+    double y2 = mY2LineEdit->text().toDouble();
+    double x3 = mX3LineEdit->text().toDouble();
+    double y3 = mY3LineEdit->text().toDouble();
+    Point p1(x1, y1);
+    Point p2(x2, y2);
+    Point p3(x3, y3);
+    Triangle t(p1, p2, p3);
+    std::vector<Point> coord = t.getCoordinates();
+    mShapeoutput->setText(Sketcher::printout(coord));
+}
+
+void Sketcher::onRectangleToolClicked()
+{
+    double x1 = mX1LineEdit->text().toDouble();
+    double y1 = mY1LineEdit->text().toDouble();
+    double x2 = mX2LineEdit->text().toDouble();
+    double y2 = mY2LineEdit->text().toDouble();
+    Point p1(x1, y1);
+    Point p2(x2, y2);
+    Rectangles r1(p1, p2);
+    std::vector<Point> coord = r1.getCoordinates();
+    mShapeoutput->setText(Sketcher::printout(coord));
+}
+
+void Sketcher::onCircleToolClicked()
+{
+    double x1 = mX1LineEdit->text().toDouble();
+    double y1 = mY1LineEdit->text().toDouble();
+    double x2 = mX2LineEdit->text().toDouble();
+    double y2 = mY2LineEdit->text().toDouble();
+    Point p1(x1, y1);
+    Point p2(x2, y2);
+    Circle c1(p1, p2);
+    std::vector<Point> coord = c1.getCoordinates();
+    mShapeoutput->setText(Sketcher::printout(coord));
 }
 void Sketcher::setupUI() {
     mCentralWidget = new QWidget(this);
@@ -85,79 +148,14 @@ void Sketcher::setupUI() {
     mShapeoutput->setText("Coordinates:");
     mCentralgridWidget->addWidget(mShapeoutput, 3, 0, 1, 2);
 
-
-    // Point
-    connect(mPointTool, &QToolButton::clicked, this, &Sketcher::CreatePoint);
-
-    //Line
-    connect(mLineTool, &QToolButton::clicked, this, &Sketcher::CreateLine);
-
-    //Circle
-    connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::CreateCircle);
-
-    //Rectangle
-    connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::CreateRectangle);
-
-    //Triangle
-    connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::CreateTriangle);
-
-}
-
-
-// Point
-void Sketcher::CreatePoint() {
-    double x = mX1LineEdit->text().toDouble();
-    double y = mY1LineEdit->text().toDouble();
-
-    Point p1(x, y);
-    QString solution = QString("X: ").append(QString::number(p1.x)).append(" Y: ").append(QString::number(p1.y));
-    mShapeoutput->setText(solution);
-}
-
-
-//Line
-void Sketcher::CreateLine() {
-    double x1 = mX1LineEdit->text().toDouble();
-    double y1 = mY1LineEdit->text().toDouble();
-    double x2 = mX2LineEdit->text().toDouble();
-    double y2 = mY2LineEdit->text().toDouble();
-
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Line l1(p1, p2);
-    std::vector<Point> cordL = l1.getCoordinates();
-    mShapeoutput->setText(Sketcher::printout(cordL));
-}
-
-//Rectangle
-void Sketcher::CreateRectangle() {
-    double x1 = mX1LineEdit->text().toDouble();
-    double y1 = mY1LineEdit->text().toDouble();
-    double x2 = mX2LineEdit->text().toDouble();
-    double y2 = mY2LineEdit->text().toDouble();
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Rectangles r1(p1, p2);
-    std::vector<Point> cordL = r1.getCoordinates();
-    mShapeoutput->setText(Sketcher::printout(cordL));
-}
-
-
-//Triangle
-void Sketcher::CreateTriangle() {
-    double x1 = mX1LineEdit->text().toDouble();
-    double y1 = mY1LineEdit->text().toDouble();
-    double x2 = mX2LineEdit->text().toDouble();
-    double y2 = mY2LineEdit->text().toDouble();
-    double x3 = mX3LineEdit->text().toDouble();
-    double y3 = mY3LineEdit->text().toDouble();
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Point p3(x3, y3);
-    Triangle t(p1, p2, p3);
-    std::vector<Point> cordL = t.getCoordinates();
-    mShapeoutput->setText(Sketcher::printout(cordL));
-}
+  
+    
+	connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
+    connect(mLineTool, &QToolButton::clicked, this ,&Sketcher::onLineToolClicked);
+    connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
+    connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
+	connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
+    
 
 //Circle
 void Sketcher::CreateCircle() {

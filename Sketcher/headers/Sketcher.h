@@ -45,4 +45,14 @@ public:
     QString printout(std::vector<Point> p);
 
 
+private slots:
+    void onPointToolClicked();
+	void onLineToolClicked();
+	void onTriangleToolClicked();
+	void onRectangleToolClicked();
+	void onCircleToolClicked();
+
+    
+
+    
 };
