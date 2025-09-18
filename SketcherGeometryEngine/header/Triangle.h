@@ -1,4 +1,5 @@
 #pragma once
+#include "Exports.h"
 #include "Shape.h"
 #include "Point.h"
 #include "Line.h"
@@ -6,7 +7,7 @@
 
 
 
-class Triangle : public Shape {
+class SKETCHERGEOMETRYENGINE_API Triangle : public Shape {
 private:
     Point p1;
     Point p2;

@@ -1,10 +1,11 @@
 #pragma once
+#include "Exports.h"
 #include <string>
 #include <vector>
 #include "Point.h"
 
 // Abstract Base Class (Abstraction)
-class Shape {
+class SKETCHERGEOMETRYENGINE_API Shape {
 protected:
     std::string name; // Encapsulation (private/protected data)
 
