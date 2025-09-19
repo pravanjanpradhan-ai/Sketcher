@@ -17,8 +17,7 @@ Sketcher::Sketcher(QWidget* parent)
 
     setupUI();
     resize(800, 600);
-    mScene = new QGraphicsScene(this);
-    mGraphicsView->setScene(mScene);
+    
 }
 
 Sketcher::~Sketcher()
@@ -36,15 +35,7 @@ void Sketcher::drawConnectedPoints( std::vector<Point>& points)
     }
     mScene->addPolygon(polygon, QPen(Qt::blue, 2));
 
-
-    //To draw small circles at each point
-    int radius = 4;
-    for (const auto& point : points) {
-        mScene->addEllipse(point.x - radius / 2, point.y - radius / 2,
-            radius, radius,
-            QPen(Qt::black),
-            QBrush(Qt::red));
-    }
+    
 }
 
 void Sketcher::onPointToolClicked()
@@ -52,9 +43,14 @@ void Sketcher::onPointToolClicked()
 	double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
 	double y = QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);  
     Point p1(x, y);
-    std::vector<Point> coord;
-	coord.push_back(p1);
-    drawConnectedPoints(coord);
+    int radius = 4;
+
+  
+    mScene->addEllipse(p1.x - radius / 2, p1.y - radius / 2,
+                                              radius, radius,
+                                             QPen(Qt::black),
+                                             QBrush(Qt::red));
+    
 }
 void Sketcher::onLineToolClicked()
 {
@@ -95,6 +91,8 @@ void Sketcher::onRectangleToolClicked()
     Rectangles r1(p1, p2);
     std::vector<Point> coord = r1.getCoordinates();
     drawConnectedPoints(coord);
+    
+    
 }
 
 void Sketcher::onCircleToolClicked()
@@ -115,6 +113,11 @@ void Sketcher::setupUI() {
     setCentralWidget(mCentralWidget);
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
+
+    mGraphicsView = new QGraphicsView(this);
+    mCentralgridWidget->addWidget(mGraphicsView);
+    mScene = new QGraphicsScene(this);
+    mGraphicsView->setScene(mScene);
 
 
     mPointTool = new QToolButton(mToolBar);
@@ -156,8 +159,7 @@ void Sketcher::setupUI() {
 
    
 
-    mGraphicsView = new QGraphicsView(this);
-    mCentralgridWidget->addWidget(mGraphicsView, 0, 0, 1, 2);
+    
 
 
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
