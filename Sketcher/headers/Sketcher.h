@@ -28,13 +28,6 @@ public:
     QToolButton* mTriangleTool;
     QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
-	QLineEdit* mX1LineEdit;
-	QLineEdit* mY1LineEdit;
-    QLineEdit* mX2LineEdit;
-    QLineEdit* mY2LineEdit;
-    QLineEdit* mX3LineEdit;
-    QLineEdit* mY3LineEdit;
-	QLabel* mShapeoutput;
     void drawConnectedPoints(std::vector<Point>& points);
 	QGraphicsView* mGraphicsView;
     QGraphicsScene* mScene;
