@@ -35,7 +35,9 @@ public:
     QLineEdit* mX3LineEdit;
     QLineEdit* mY3LineEdit;
 	QLabel* mShapeoutput;
-    QString printout(std::vector<Point> p);
+    void drawConnectedPoints(std::vector<Point>& points);
+	QGraphicsView* mGraphicsView;
+    QGraphicsScene* mScene;
 
 
 private slots:
