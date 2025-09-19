@@ -19,13 +19,6 @@ public:
 private:
     void setupUI();
 
-private slots:
-    void CreatePoint();
-    void CreateLine();
-    void CreateTriangle();
-    void CreateRectangle();
-    void CreateCircle();
-
 public:
     QWidget* mCentralWidget;
     QGridLayout* mCentralgridWidget;
