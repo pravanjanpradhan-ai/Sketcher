@@ -3,10 +3,11 @@
 #include <QtWidgets/QMainWindow>
 #include <vector>
 #include "Point.h"
-
-
-
-
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QGridLayout>
+#include <QToolBar>
+#include <QToolButton>
 
 class Sketcher : public QMainWindow
 {
@@ -19,8 +20,10 @@ public:
 private:
     void setupUI();
 
-public:
+private:
     QWidget* mCentralWidget;
+    QGraphicsView* mCanvas;
+    QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
     QToolButton* mPointTool;
@@ -28,24 +31,11 @@ public:
     QToolButton* mTriangleTool;
     QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
-	QLineEdit* mX1LineEdit;
-	QLineEdit* mY1LineEdit;
-    QLineEdit* mX2LineEdit;
-    QLineEdit* mY2LineEdit;
-    QLineEdit* mX3LineEdit;
-    QLineEdit* mY3LineEdit;
-	QLabel* mShapeoutput;
-    QString printout(std::vector<Point> p);
-
 
 private slots:
     void onPointToolClicked();
-	void onLineToolClicked();
-	void onTriangleToolClicked();
-	void onRectangleToolClicked();
-	void onCircleToolClicked();
-
-    
-
-    
+    void onLineToolClicked();
+    void onTriangleToolClicked();
+    void onRectangleToolClicked();
+    void onCircleToolClicked();
 };
