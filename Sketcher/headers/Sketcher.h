@@ -16,6 +16,7 @@ class Sketcher : public QMainWindow
 public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
+    void drawConnectedPoints(std::vector<Point> p);
 
 private:
     void setupUI();
@@ -31,6 +32,8 @@ private:
     QToolButton* mTriangleTool;
     QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
+    QToolButton* mPolygonTool;
+    QToolButton* mPolyLineTool;
 
 private slots:
     void onPointToolClicked();
