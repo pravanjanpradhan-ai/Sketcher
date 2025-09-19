@@ -15,27 +15,53 @@ Sketcher::Sketcher(QWidget* parent)
 
     setupUI();
     resize(800, 600);
+    mScene = new QGraphicsScene(this);
+    mGraphicsView->setScene(mScene);
 }
 
 Sketcher::~Sketcher()
 {
 }
 
-QString Sketcher::printout(std::vector<Point> p) {
-    QString solution;
-    for (const auto& point : p) {
-        solution.append("X: ").append(QString::number(point.x)).append(" Y: ").append(QString::number(point.y)).append("\n");
-    }
-    return solution;
+//QString Sketcher::printout(std::vector<Point> p) {
+//    QString solution;
+//    for (const auto& point : p) {
+//        solution.append("X: ").append(QString::number(point.x)).append(" Y: ").append(QString::number(point.y)).append("\n");
+//    }
+//    return solution;
+//
+//}
 
+void Sketcher::drawConnectedPoints( std::vector<Point>& points)
+{
+    //mScene->clear();  // Clear previous drawings
+
+    // Draw lines between points
+    for (size_t i = 1; i < points.size(); ++i) {
+        mScene->addLine(points[i - 1].x, points[i - 1].y,
+            points[i].x, points[i].y,
+            QPen(Qt::blue, 2));
+    }
+
+    // Draw small circles at each point
+    int radius = 4;
+    for (const auto& point : points) {
+        mScene->addEllipse(point.x - radius / 2, point.y - radius / 2,
+            radius, radius,
+            QPen(Qt::black),
+            QBrush(Qt::red));
+    }
 }
+
 void Sketcher::onPointToolClicked()
 {
     double x = mX1LineEdit->text().toDouble();
     double y = mY1LineEdit->text().toDouble();
     Point p1(x, y);
-    QString solution = QString("X: ").append(QString::number(p1.x)).append(" Y: ").append(QString::number(p1.y));
-    mShapeoutput->setText(solution);
+    //QString solution = QString("X: ").append(QString::number(p1.x)).append(" Y: ").append(QString::number(p1.y));
+    std::vector<Point> coord;
+	coord.push_back(p1);
+    drawConnectedPoints(coord);
 }
 void Sketcher::onLineToolClicked()
 {
@@ -48,7 +74,7 @@ void Sketcher::onLineToolClicked()
     Point p2(x2, y2);
     Line l1(p1, p2);
     std::vector<Point> coord = l1.getCoordinates();
-    mShapeoutput->setText(Sketcher::printout(coord));
+    drawConnectedPoints(coord);
 }
 void Sketcher::onTriangleToolClicked()
 {
@@ -63,7 +89,7 @@ void Sketcher::onTriangleToolClicked()
     Point p3(x3, y3);
     Triangle t(p1, p2, p3);
     std::vector<Point> coord = t.getCoordinates();
-    mShapeoutput->setText(Sketcher::printout(coord));
+    drawConnectedPoints(coord);
 }
 
 void Sketcher::onRectangleToolClicked()
@@ -76,7 +102,7 @@ void Sketcher::onRectangleToolClicked()
     Point p2(x2, y2);
     Rectangles r1(p1, p2);
     std::vector<Point> coord = r1.getCoordinates();
-    mShapeoutput->setText(Sketcher::printout(coord));
+    drawConnectedPoints(coord);
 }
 
 void Sketcher::onCircleToolClicked()
@@ -89,7 +115,7 @@ void Sketcher::onCircleToolClicked()
     Point p2(x2, y2);
     Circle c1(p1, p2);
     std::vector<Point> coord = c1.getCoordinates();
-    mShapeoutput->setText(Sketcher::printout(coord));
+    drawConnectedPoints(coord);
 }
 void Sketcher::setupUI() {
     mCentralWidget = new QWidget(this);
@@ -158,9 +184,10 @@ void Sketcher::setupUI() {
     mY3LineEdit->setPlaceholderText("Y3");
     mCentralgridWidget->addWidget(mY3LineEdit, 2, 1, 1, 1);
 
-    mShapeoutput = new QLabel(mCentralWidget);
-    mShapeoutput->setText("Coordinates:");
-    mCentralgridWidget->addWidget(mShapeoutput, 3, 0, 1, 2);
+   
+
+    mGraphicsView = new QGraphicsView(this);
+    mCentralgridWidget->addWidget(mGraphicsView, 3, 0, 1, 2);
 
 
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
