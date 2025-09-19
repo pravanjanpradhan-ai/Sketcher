@@ -18,6 +18,7 @@ public:
 
 private:
     void setupUI();
+    
 
 public:
     QWidget* mCentralWidget;
