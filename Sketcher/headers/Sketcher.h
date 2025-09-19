@@ -25,7 +25,7 @@ public:
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
     QToolButton* mPointTool;
-    QToolButton* mLineTool;
+    QToolButton* mLineTool;     
     QToolButton* mTriangleTool;
     QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
