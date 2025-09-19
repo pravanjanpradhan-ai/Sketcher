@@ -32,8 +32,22 @@ void Sketcher::setupUI()
     mScene = new QGraphicsScene(this);
     mCanvas = new QGraphicsView(mScene, mCentralWidget);
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
-
     setCentralWidget(mCentralWidget);
+
+    // File Menu
+    QMenu* fileMenu = menuBar()->addMenu("File");
+    QAction* saveAction = fileMenu->addAction("Save");
+    saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
+    QAction* clearAction = fileMenu->addAction("Clear");
+    clearAction->setShortcut(Qt::CTRL | Qt::Key_X); // Ctrl+X
+
+    // Edit Menu
+    QMenu* editMenu = menuBar()->addMenu("Edit");
+    QAction* undoAction = editMenu->addAction("Undo");
+    undoAction->setShortcut(QKeySequence::Undo);   // Ctrl+Z
+    QAction* redoAction = editMenu->addAction("Redo");
+    redoAction->setShortcut(Qt::ALT | Qt::Key_Z);   // Alt+Z
+
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
 
@@ -72,6 +86,11 @@ void Sketcher::setupUI()
     mCircleTool->setToolTip("Circle");
     mToolBar->addWidget(mCircleTool);
 
+    // Text
+    QToolButton* Text_btn = new QToolButton(mToolBar);
+    Text_btn->setText("Text");
+    mToolBar->addWidget(Text_btn);
+
     // Connections
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
     connect(mLineTool, &QToolButton::clicked, this, &Sketcher::onLineToolClicked);
@@ -87,7 +106,8 @@ void Sketcher::onPointToolClicked()
     double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
     double y = QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
     Point p(x, y);
-    mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::black), QBrush(Qt::red));
+    QBrush brush(QColor("#3DB9E7"));
+    mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
 }
 
 void Sketcher::onLineToolClicked()
@@ -121,7 +141,7 @@ void Sketcher::onTriangleToolClicked()
     for (int i = 0; i < p.size(); i++) {
         shape << QPointF(p[i].x, p[i].y);
     }
-    mScene->addPolygon(shape, QPen(Qt::magenta, 2));
+    mScene->addPolygon(shape, QPen(Qt::darkCyan, 2));
 }
 
 void Sketcher::onRectangleToolClicked()
@@ -156,4 +176,6 @@ void Sketcher::onCircleToolClicked()
         shape << QPointF(p[i].x, p[i].y);
     }
     mScene->addPolygon(shape, QPen(Qt::green, 2));
+    QBrush brush(QColor("#3DB9E7"));
+    mScene->addEllipse(x1 - 2, y1 - 2, 4, 4, QPen(Qt::transparent), brush);
 }
