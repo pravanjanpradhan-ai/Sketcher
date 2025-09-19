@@ -26,7 +26,7 @@ QString Sketcher::printout(std::vector<Point> p) {
     for (const auto& point : p) {
         solution.append("X: ").append(QString::number(point.x)).append(" Y: ").append(QString::number(point.y)).append("\n");
     }
-	return solution;
+    return solution;
 
 }
 void Sketcher::onPointToolClicked()
@@ -100,32 +100,47 @@ void Sketcher::setupUI() {
 
 
     mPointTool = new QToolButton(mToolBar);
-    mPointTool->setText("Point");
+    QIcon pointIcon(":/Sketcher/Point.png");
+    mPointTool->setIcon(pointIcon);
+    mPointTool->setIconSize(QSize(32, 32));
+    mPointTool->setToolTip("Point");
     mToolBar->addWidget(mPointTool);
 
     mLineTool = new QToolButton(mToolBar);
-    mLineTool->setText("Line");
+    QIcon LineIcon(":/Sketcher/Line.png");
+    mLineTool->setIcon(LineIcon);
+    mLineTool->setIconSize(QSize(32, 32));
+    mLineTool->setToolTip("Line");
     mToolBar->addWidget(mLineTool);
 
     mTriangleTool = new QToolButton(mToolBar);
-    mTriangleTool->setText("Triangle");
+    QIcon TriangleIcon(":/Sketcher/Triangle.png");
+    mTriangleTool->setIcon(TriangleIcon);
+    mTriangleTool->setIconSize(QSize(32, 32));
+    mTriangleTool->setToolTip("Triangle");
     mToolBar->addWidget(mTriangleTool);
 
     mRectangleTool = new QToolButton(mToolBar);
-    mRectangleTool->setText("Rectangle");
+    QIcon RectangleIcon(":/Sketcher/Rectangle.png");
+    mRectangleTool->setIcon(RectangleIcon);
+    mRectangleTool->setIconSize(QSize(32, 32));
+    mRectangleTool->setToolTip("Rectangle");
     mToolBar->addWidget(mRectangleTool);
 
     mCircleTool = new QToolButton(mToolBar);
-    mCircleTool->setText("Circle");
+    QIcon CircleIcon(":/Sketcher/Circle.png");
+    mCircleTool->setIcon(CircleIcon);
+    mCircleTool->setIconSize(QSize(32, 32));
+    mCircleTool->setToolTip("Circle");
     mToolBar->addWidget(mCircleTool);
 
     mX1LineEdit = new QLineEdit(mCentralWidget);
     mX1LineEdit->setPlaceholderText("X1");
-    mCentralgridWidget->addWidget(mX1LineEdit,0,0, 1, 1);  
+    mCentralgridWidget->addWidget(mX1LineEdit, 0, 0, 1, 1);
 
     mY1LineEdit = new QLineEdit(mCentralWidget);
     mY1LineEdit->setPlaceholderText("Y1");
-    mCentralgridWidget->addWidget(mY1LineEdit,0,1, 1, 1);
+    mCentralgridWidget->addWidget(mY1LineEdit, 0, 1, 1, 1);
 
     mX2LineEdit = new QLineEdit(mCentralWidget);
     mX2LineEdit->setPlaceholderText("X2");
@@ -147,13 +162,12 @@ void Sketcher::setupUI() {
     mShapeoutput->setText("Coordinates:");
     mCentralgridWidget->addWidget(mShapeoutput, 3, 0, 1, 2);
 
-  
-    
-	connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
-    connect(mLineTool, &QToolButton::clicked, this ,&Sketcher::onLineToolClicked);
+
+    connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
+    connect(mLineTool, &QToolButton::clicked, this, &Sketcher::onLineToolClicked);
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
-	connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
-    
+    connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
+
 
 }

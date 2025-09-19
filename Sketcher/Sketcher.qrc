@@ -1,4 +1,10 @@
 <RCC>
-    <qresource prefix="Sketcher">
+    <qresource prefix="/Sketcher">
+        <file>Circle.png</file>
+        <file>Line.png</file>
+        <file>Point.png</file>
+        <file>Polygon.png</file>
+        <file>Rectangle.png</file>
+        <file>Triangle.png</file>
     </qresource>
 </RCC>
