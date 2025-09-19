@@ -19,6 +19,22 @@ Sketcher::Sketcher(QWidget* parent)
 
 Sketcher::~Sketcher()
 {
+    delete mPointTool;
+    delete mLineTool;
+    delete mTriangleTool;
+    delete mRectangleTool;
+    delete mCircleTool;
+    delete mX1LineEdit;
+    delete mY1LineEdit;
+    delete mX2LineEdit;
+    delete mY2LineEdit;
+    delete mX3LineEdit;
+    delete mY3LineEdit;
+    delete mShapeoutput;
+
+    delete mToolBar;
+    delete mCentralgridWidget;
+    delete mCentralWidget;
 }
 
 QString Sketcher::printout(std::vector<Point> p) {
