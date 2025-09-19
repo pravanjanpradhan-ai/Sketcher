@@ -3,10 +3,11 @@
 #include <QtWidgets/QMainWindow>
 #include <vector>
 #include "Point.h"
-
-
-
-
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QGridLayout>
+#include <QToolBar>
+#include <QToolButton>
 
 class Sketcher : public QMainWindow
 {
@@ -15,12 +16,15 @@ class Sketcher : public QMainWindow
 public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
+    void drawConnectedPoints(std::vector<Point> p);
 
 private:
     void setupUI();
 
-public:
+private:
     QWidget* mCentralWidget;
+    QGraphicsView* mCanvas;
+    QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
     QToolButton* mPointTool;
@@ -28,19 +32,13 @@ public:
     QToolButton* mTriangleTool;
     QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
-    void drawConnectedPoints(std::vector<Point>& points);
-	QGraphicsView* mGraphicsView;
-    QGraphicsScene* mScene;
-
+    QToolButton* mPolygonTool;
+    QToolButton* mPolyLineTool;
 
 private slots:
     void onPointToolClicked();
-	void onLineToolClicked();
-	void onTriangleToolClicked();
-	void onRectangleToolClicked();
-	void onCircleToolClicked();
-
-    
-
-    
+    void onLineToolClicked();
+    void onTriangleToolClicked();
+    void onRectangleToolClicked();
+    void onCircleToolClicked();
 };
