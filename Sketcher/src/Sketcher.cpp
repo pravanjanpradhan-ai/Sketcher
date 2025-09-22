@@ -7,10 +7,10 @@
 #include <QMessageBox>
 #include "Point.h"
 #include "Line.h"
-#include "Shape.h"
 #include "Circle.h"
 #include "Rectangle.h"
 #include "Triangle.h"
+#include "FileWrite.h"
 
 
 Sketcher::Sketcher(QWidget* parent)
@@ -116,6 +116,8 @@ void Sketcher::setupUI()
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
+
+    connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
 }
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
@@ -132,65 +134,81 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
 void Sketcher::onPointToolClicked()
 {
     double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
-    double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
+    double y = QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
     Point p(x, y);
     QBrush brush(QColor("#3DB9E7"));
     mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
+    mShapes[mShapeId++].push_back(p);
 }
 
 void Sketcher::onLineToolClicked()
 {
     double x1 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = -QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double y1 = QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
     double x2 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = -QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    double y2 = QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
     Point p1(x1, y1);
     Point p2(x2, y2);
-    Line l(p1, p2);
-    std::vector<Point> p = l.getCoordinates();
+    Line* l = new Line(p1, p2);
+    std::vector<Point> p = l->getCoordinates();
     drawConnectedPoints(p);
+    mShapes[mShapeId++].push_back(l);
 }
 
 void Sketcher::onTriangleToolClicked()
 {
     double x1 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = -QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double y1 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
     double x2 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = -QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    double y2 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
     double x3 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 3rd Point:", 0, -10000, 10000, 2);
-    double y3 = -QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 3rd Point:", 1, -10000, 10000, 2);
+    double y3 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 3rd Point:", 1, -10000, 10000, 2);
     Point a(x1, y1);
     Point b(x2, y2);
     Point c(x3, y3);
-    Triangle t(a, b, c);
-    std::vector<Point> p = t.getCoordinates();
+    Triangle* t = new Triangle(a, b, c);
+    std::vector<Point> p = t->getCoordinates();
     drawConnectedPoints(p);
+    mShapes[mShapeId++].push_back(t);
 }
 
 void Sketcher::onRectangleToolClicked()
 {
     double x1 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = -QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double y1 = QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
     double x2 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = -QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    double y2 = QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
     Point a(x1, y1);
     Point c(x2, y2);
-    Rectangles r(a, c);
-    std::vector<Point> p = r.getCoordinates();
+    Rectangles* r = new Rectangles(a, c);
+    std::vector<Point> p = r->getCoordinates();
     drawConnectedPoints(p);
+    mShapes[mShapeId++].push_back(r);
 }
 
 void Sketcher::onCircleToolClicked()
 {
     double x1 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of Center:", 0, -10000, 10000, 2);
-    double y1 = -QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of Center:", 0, -10000, 10000, 2);
+    double y1 = QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of Center:", 0, -10000, 10000, 2);
     double x2 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of a circumference Point:", 1, -10000, 10000, 2);
-    double y2 = -QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of a circumference Point:", 1, -10000, 10000, 2);
+    double y2 = QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of a circumference Point:", 1, -10000, 10000, 2);
     Point Center(x1, y1);
     Point onCircle(x2, y2);
-    Circle c(Center, onCircle);
-    std::vector<Point> p = c.getCoordinates();
+    Circle* c = new Circle(Center, onCircle);
+    std::vector<Point> p = c->getCoordinates();
     drawConnectedPoints(p);
-    //QBrush brush(QColor("#3DB9E7"));
-    //mScene->addEllipse(x1 - 2, y1 - 2, 4, 4, QPen(Qt::transparent), brush);
+    mShapes[mShapeId++].push_back(c);
+}
+
+void Sketcher::onSaveActionTriggered()
+{
+    QString mfilename = QFileDialog::getSaveFileName(
+        this, "Save Shapes", "", "Text Files (*.txt)");
+
+    if (!mfilename.isEmpty()) {
+        std::string filename = mfilename.toStdString();
+        FileWrite output;
+        output.write(filename, mShapes);
+        QMessageBox::information(this, "Saved", "Shapes saved successfully!");
+    }
 }
