@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Sketcher.h"
 #include <QString>
 #include <QIcon>
@@ -117,7 +117,10 @@ void Sketcher::setupUI()
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
 
+    connect(NeweAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
+
+    connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
 }
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
@@ -200,6 +203,34 @@ void Sketcher::onCircleToolClicked()
     mShapes[mShapeId++].push_back(c);
 }
 
+void Sketcher::onNewActionTriggered()
+{
+    if (!mShapes.empty() && !isSave) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(
+            this,
+            "Save Shapes",
+            "Do you want to save your current shapes before starting a new sketch?",
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel
+        );
+
+        if (reply == QMessageBox::Yes) {
+            // Call your existing save slot
+            onSaveActionTriggered();
+        }
+        else if (reply == QMessageBox::Cancel) {
+            return;
+        }
+        // if No → continue without saving
+    }
+
+    // Open a new Sketcher window
+    Sketcher* newWindow = new Sketcher();
+    newWindow->show();
+    // Close current window
+    this->close();
+}
+
 void Sketcher::onSaveActionTriggered()
 {
     QString mfilename = QFileDialog::getSaveFileName(
@@ -210,5 +241,39 @@ void Sketcher::onSaveActionTriggered()
         FileWrite output;
         output.write(filename, mShapes);
         QMessageBox::information(this, "Saved", "Shapes saved successfully!");
+        isSave = true;
     }
+}
+
+void Sketcher::onCleanActionTriggered()
+{
+    if (!mShapes.empty()) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(
+            this,
+            "Clean All",
+            "Are you sure you want to remove all shapes?",
+            QMessageBox::Yes | QMessageBox::No
+        );
+
+        if (reply != QMessageBox::Yes)
+            return;
+    }
+
+    // Clear scene
+    mScene->clear();
+
+    // Delete dynamically allocated shapes
+    for (auto& [id, vec] : mShapes) {
+        for (auto& item : vec) {
+            if (std::holds_alternative<Shape*>(item)) {
+                Shape* shape = std::get<Shape*>(item);
+                delete shape;
+            }
+        }
+    }
+
+    // Clear internal data
+    mShapes.clear();
+    mShapeId = 0;
 }

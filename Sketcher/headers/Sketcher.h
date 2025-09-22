@@ -26,6 +26,7 @@ private:
     void setupUI();
     std::unordered_map<int, std::vector<SketchData>> mShapes;
     int mShapeId = 0;
+    bool isSave = false;
 
 private:
     QWidget* mCentralWidget;
@@ -48,5 +49,8 @@ private slots:
     void onRectangleToolClicked();
     void onCircleToolClicked();
 
+    void onNewActionTriggered();
     void onSaveActionTriggered();
+
+    void onCleanActionTriggered();
 };
