@@ -6,5 +6,6 @@
         <file>Polygon.png</file>
         <file>Rectangle.png</file>
         <file>Triangle.png</file>
+        <file>PolyLine.png</file>
     </qresource>
 </RCC>

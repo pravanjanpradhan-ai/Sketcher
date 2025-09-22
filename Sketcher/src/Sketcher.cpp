@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Sketcher.h"
 #include <QString>
+#include <QIcon>
+#include <QSize>
 #include <QInputDialog>
 #include <QMessageBox>
 #include "Point.h"
@@ -14,157 +16,181 @@
 Sketcher::Sketcher(QWidget* parent)
     : QMainWindow(parent)
 {
-
     setupUI();
     resize(800, 600);
-    mScene = new QGraphicsScene(this);
-    mGraphicsView->setScene(mScene);
 }
 
-Sketcher::~Sketcher()
+Sketcher::~Sketcher() {}
+
+void Sketcher::setupUI()
 {
-}
-
-
-void Sketcher::drawConnectedPoints( std::vector<Point>& points)
-{
-    //mScene->clear();  // Clear previous drawings
-
-    QPolygonF polygon;
-    for (int i = 0; i < points.size(); ++i) {
-        polygon << QPointF(points[i].x, points[i].y);
-    }
-    mScene->addPolygon(polygon, QPen(Qt::blue, 2));
-
-
-    //To draw small circles at each point
-    int radius = 4;
-    for (const auto& point : points) {
-        mScene->addEllipse(point.x - radius / 2, point.y - radius / 2,
-            radius, radius,
-            QPen(Qt::black),
-            QBrush(Qt::red));
-    }
-}
-
-void Sketcher::onPointToolClicked()
-{
-	double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
-	double y = - QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);  
-    Point p1(x, y);
-    std::vector<Point> coord;
-	coord.push_back(p1);
-    drawConnectedPoints(coord);
-}
-void Sketcher::onLineToolClicked()
-{
-    double x1 = QInputDialog::getDouble(this, "Line", "Enter X coordinate for 1st Point:", 0, -10000, 10000, 2);
-    double y1 = - QInputDialog::getDouble(this, "Line", "Enter Y coordinate for 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Line", "Enter X coordinate for 2nd Point:", 0, -10000, 10000, 2);
-    double y2 = - QInputDialog::getDouble(this, "Line", "Enter Y coordinate for 2nd Point:", 0, -10000, 10000, 2);
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Line l1(p1, p2);
-    std::vector<Point> coord = l1.getCoordinates();
-    drawConnectedPoints(coord);
-}
-void Sketcher::onTriangleToolClicked()
-{
-    double x1 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate for 1st Point:", 0, -10000, 10000, 2);
-    double y1 = - QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate for 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate for 2nd Point:", 0, -10000, 10000, 2);
-    double y2 = - QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate for 2nd Point:", 0, -10000, 10000, 2);
-    double x3 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate for 3rd Point:", 0, -10000, 10000, 2);
-    double y3 = - QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate for 3rd Point:", 0, -10000, 10000, 2);
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Point p3(x3, y3);
-    Triangle t(p1, p2, p3);
-    std::vector<Point> coord = t.getCoordinates();
-    drawConnectedPoints(coord);
-}
-
-void Sketcher::onRectangleToolClicked()
-{
-    double x1 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate for 1st Point:", 0, -10000, 10000, 2);
-    double y1 = - QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate for 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate for 2nd Point:", 0, -10000, 10000, 2);
-    double y2 = - QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate for 2nd Point:", 0, -10000, 10000, 2);
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Rectangles r1(p1, p2);
-    std::vector<Point> coord = r1.getCoordinates();
-    drawConnectedPoints(coord);
-}
-
-void Sketcher::onCircleToolClicked()
-{
-    double x1 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate for Center Point:", 0, -10000, 10000, 2);
-    double y1 = - QInputDialog::getDouble(this, "Circle", "Enter Y coordinate for Center Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate for a Point on the circumference:", 0, -10000, 10000, 2);
-    double y2 = - QInputDialog::getDouble(this, "Circle", "Enter Y coordinate for a Point on the circumference:", 0, -10000, 10000, 2);
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Circle c1(p1, p2);
-    std::vector<Point> coord = c1.getCoordinates();
-    drawConnectedPoints(coord);
-}
-void Sketcher::setupUI() {
+    // Central widget and layout
     mCentralWidget = new QWidget(this);
     mCentralgridWidget = new QGridLayout(mCentralWidget);
+
+    // Scene + Canvas
+    mScene = new QGraphicsScene(this);
+    mCanvas = new QGraphicsView(mScene, mCentralWidget);
+    mCentralgridWidget->addWidget(mCanvas, 0, 0);
     setCentralWidget(mCentralWidget);
+
+    // File Menu
+    QMenu* fileMenu = menuBar()->addMenu("File");
+    QAction* NeweAction = fileMenu->addAction("New");
+    NeweAction->setShortcut(QKeySequence::New);   // Ctrl+N
+    QAction* openeAction = fileMenu->addAction("Open");
+    openeAction->setShortcut(QKeySequence::Open);   // Ctrl+O
+    QAction* saveAction = fileMenu->addAction("Save");
+    saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
+    
+
+    // Edit Menu
+    QMenu* editMenu = menuBar()->addMenu("Edit");
+    QAction* cleanAction = editMenu->addAction("Clean");
+    cleanAction->setShortcut(Qt::CTRL | Qt::Key_X); // Ctrl+X
+    QAction* undoAction = editMenu->addAction("Undo");
+    undoAction->setShortcut(QKeySequence::Undo);   // Ctrl+Z
+    QAction* redoAction = editMenu->addAction("Redo");
+    redoAction->setShortcut(Qt::ALT | Qt::Key_Z);   // Alt+Z
+
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
 
-
+    // Point Tool
     mPointTool = new QToolButton(mToolBar);
-    QIcon pointIcon(":/Sketcher/Point.png");
-    mPointTool->setIcon(pointIcon);
+    mPointTool->setIcon(QIcon(":/Sketcher/Point.png"));
     mPointTool->setIconSize(QSize(32, 32));
     mPointTool->setToolTip("Point");
     mToolBar->addWidget(mPointTool);
 
+    // Line Tool
     mLineTool = new QToolButton(mToolBar);
-    QIcon LineIcon(":/Sketcher/Line.png");
-    mLineTool->setIcon(LineIcon);
+    mLineTool->setIcon(QIcon(":/Sketcher/Line.png"));
     mLineTool->setIconSize(QSize(32, 32));
     mLineTool->setToolTip("Line");
     mToolBar->addWidget(mLineTool);
 
+    // Triangle Tool
     mTriangleTool = new QToolButton(mToolBar);
-    QIcon TriangleIcon(":/Sketcher/Triangle.png");
-    mTriangleTool->setIcon(TriangleIcon);
+    mTriangleTool->setIcon(QIcon(":/Sketcher/Triangle.png"));
     mTriangleTool->setIconSize(QSize(32, 32));
     mTriangleTool->setToolTip("Triangle");
     mToolBar->addWidget(mTriangleTool);
 
+    // Rectangle Tool
     mRectangleTool = new QToolButton(mToolBar);
-    QIcon RectangleIcon(":/Sketcher/Rectangle.png");
-    mRectangleTool->setIcon(RectangleIcon);
+    mRectangleTool->setIcon(QIcon(":/Sketcher/Rectangle.png"));
     mRectangleTool->setIconSize(QSize(32, 32));
     mRectangleTool->setToolTip("Rectangle");
     mToolBar->addWidget(mRectangleTool);
 
+    // Circle Tool
     mCircleTool = new QToolButton(mToolBar);
-    QIcon CircleIcon(":/Sketcher/Circle.png");
-    mCircleTool->setIcon(CircleIcon);
+    mCircleTool->setIcon(QIcon(":/Sketcher/Circle.png"));
     mCircleTool->setIconSize(QSize(32, 32));
     mCircleTool->setToolTip("Circle");
     mToolBar->addWidget(mCircleTool);
 
-    
+    // Polygon Tool
+    mPolygonTool = new QToolButton(mToolBar);
+    mPolygonTool->setIcon(QIcon(":/Sketcher/Polygon.png"));
+    mPolygonTool->setIconSize(QSize(32, 32));
+    mPolygonTool->setToolTip("Polygon");
+    mToolBar->addWidget(mPolygonTool);
 
-   
+    // PolyLine Tool
+    mPolyLineTool = new QToolButton(mToolBar);
+    mPolyLineTool->setIcon(QIcon(":/Sketcher/PolyLine.png"));
+    mPolyLineTool->setIconSize(QSize(32, 32));
+    mPolyLineTool->setToolTip("PolyLine");
+    mToolBar->addWidget(mPolyLineTool);
 
-    mGraphicsView = new QGraphicsView(this);
-    mCentralgridWidget->addWidget(mGraphicsView, 0, 0, 1, 2);
+    // Text
+    //QToolButton* Text_btn = new QToolButton(mToolBar);
+    //Text_btn->setText("Text");
+    //mToolBar->addWidget(Text_btn);
 
-
+    // Connections
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
     connect(mLineTool, &QToolButton::clicked, this, &Sketcher::onLineToolClicked);
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
+}
 
+void Sketcher::drawConnectedPoints(std::vector<Point> p)
+{
+    QPolygonF shape;
+    for (int i = 0; i < p.size(); i++) {
+        shape << QPointF(p[i].x, p[i].y);
+    }
+    mScene->addPolygon(shape, QPen(Qt::black, 2));
+}
 
+// --- Slots for drawing ---
+
+void Sketcher::onPointToolClicked()
+{
+    double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
+    double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
+    Point p(x, y);
+    QBrush brush(QColor("#3DB9E7"));
+    mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
+}
+
+void Sketcher::onLineToolClicked()
+{
+    double x1 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double y1 = -QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double x2 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    double y2 = -QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    Point p1(x1, y1);
+    Point p2(x2, y2);
+    Line l(p1, p2);
+    std::vector<Point> p = l.getCoordinates();
+    drawConnectedPoints(p);
+}
+
+void Sketcher::onTriangleToolClicked()
+{
+    double x1 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double y1 = -QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double x2 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    double y2 = -QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    double x3 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 3rd Point:", 0, -10000, 10000, 2);
+    double y3 = -QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 3rd Point:", 1, -10000, 10000, 2);
+    Point a(x1, y1);
+    Point b(x2, y2);
+    Point c(x3, y3);
+    Triangle t(a, b, c);
+    std::vector<Point> p = t.getCoordinates();
+    drawConnectedPoints(p);
+}
+
+void Sketcher::onRectangleToolClicked()
+{
+    double x1 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double y1 = -QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
+    double x2 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    double y2 = -QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
+    Point a(x1, y1);
+    Point c(x2, y2);
+    Rectangles r(a, c);
+    std::vector<Point> p = r.getCoordinates();
+    drawConnectedPoints(p);
+}
+
+void Sketcher::onCircleToolClicked()
+{
+    double x1 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of Center:", 0, -10000, 10000, 2);
+    double y1 = -QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of Center:", 0, -10000, 10000, 2);
+    double x2 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of a circumference Point:", 1, -10000, 10000, 2);
+    double y2 = -QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of a circumference Point:", 1, -10000, 10000, 2);
+    Point Center(x1, y1);
+    Point onCircle(x2, y2);
+    Circle c(Center, onCircle);
+    std::vector<Point> p = c.getCoordinates();
+    drawConnectedPoints(p);
+    //QBrush brush(QColor("#3DB9E7"));
+    //mScene->addEllipse(x1 - 2, y1 - 2, 4, 4, QPen(Qt::transparent), brush);
 }
