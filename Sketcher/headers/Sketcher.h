@@ -50,6 +50,7 @@ private slots:
     void onCircleToolClicked();
 
     void onNewActionTriggered();
+    void onOpenActionTriggered();
     void onSaveActionTriggered();
 
     void onCleanActionTriggered();

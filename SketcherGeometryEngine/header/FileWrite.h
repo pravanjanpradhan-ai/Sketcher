@@ -16,4 +16,5 @@ public:
     ~FileWrite();
 
     bool write(const std::string& filename, const std::unordered_map<int, std::vector<SketchData>>& shapes);
+    bool read(const std::string& filename, std::unordered_map<int, std::vector<SketchData>>& shapes);
 };

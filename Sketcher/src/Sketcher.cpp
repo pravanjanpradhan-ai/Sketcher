@@ -118,6 +118,7 @@ void Sketcher::setupUI()
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
 
     connect(NeweAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
+    connect(openeAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
 
     connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
@@ -125,6 +126,11 @@ void Sketcher::setupUI()
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
+    if (p.size() > 36)
+    {
+        p.erase(p.begin());
+        p.erase(p.begin());
+    }
     QPolygonF shape;
     for (int i = 0; i < p.size(); i++) {
         shape << QPointF(p[i].x, p[i].y);
@@ -229,6 +235,50 @@ void Sketcher::onNewActionTriggered()
     newWindow->show();
     // Close current window
     this->close();
+}
+
+void Sketcher::onOpenActionTriggered()
+{
+    QString mfilename = QFileDialog::getOpenFileName(
+        this, "Open Shapes", "", "Text Files (*.txt)");
+
+    if (mfilename.isEmpty())
+        return;
+
+    std::string filename = mfilename.toStdString();
+
+    // Create a new Sketcher window
+    Sketcher* newWindow = new Sketcher();
+    newWindow->show();
+
+    // Load shapes into new window
+    FileWrite input;
+    if (!input.read(filename, newWindow->mShapes)) {
+        QMessageBox::warning(this, "Error", "Failed to open file!");
+        newWindow->close();
+        return;
+    }
+
+    // Draw loaded shapes into new window's scene
+    for (const auto& pair : newWindow->mShapes) {
+        for (const auto& item : pair.second) {
+            if (std::holds_alternative<Shape*>(item)) {
+                Shape* shape = std::get<Shape*>(item);
+                if (shape) {
+                    std::vector<Point> p = shape->getCoordinates();
+                    newWindow->drawConnectedPoints(p);
+                }
+            }
+            else if (std::holds_alternative<Point>(item)) {
+                Point pt = std::get<Point>(item);
+                QBrush brush(QColor("#3DB9E7"));
+                newWindow->mScene->addEllipse(pt.x - 2, pt.y - 2, 4, 4,
+                    QPen(Qt::transparent), brush);
+            }
+        }
+    }
+
+    QMessageBox::information(this, "Opened", "Shapes loaded successfully!");
 }
 
 void Sketcher::onSaveActionTriggered()

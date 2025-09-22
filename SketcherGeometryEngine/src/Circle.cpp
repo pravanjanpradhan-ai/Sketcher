@@ -19,6 +19,8 @@ double Circle::perimeter() const {
 }
 std::vector<Point> Circle::getCoordinates() const {
     std::vector<Point> coords;
+    coords.push_back(p1);
+    coords.push_back(p2);
     for (int i = 0; i <= numPoints; ++i) {
         double angle = i * angleStep;
         double x = p1.x + radius * cos(angle);
