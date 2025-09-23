@@ -36,13 +36,13 @@ void Sketcher::setupUI()
 
     // File Menu
     QMenu* fileMenu = menuBar()->addMenu("File");
-    QAction* NeweAction = fileMenu->addAction("New");
-    NeweAction->setShortcut(QKeySequence::New);   // Ctrl+N
-    QAction* openeAction = fileMenu->addAction("Open");
-    openeAction->setShortcut(QKeySequence::Open);   // Ctrl+O
+    QAction* newAction = fileMenu->addAction("New");
+    newAction->setShortcut(QKeySequence::New);   // Ctrl+N
+    QAction* openAction = fileMenu->addAction("Open");
+    openAction->setShortcut(QKeySequence::Open);   // Ctrl+O
     QAction* saveAction = fileMenu->addAction("Save");
     saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
-    
+
 
     // Edit Menu
     QMenu* editMenu = menuBar()->addMenu("Edit");
@@ -117,11 +117,13 @@ void Sketcher::setupUI()
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
 
-    connect(NeweAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
-    connect(openeAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
+    connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
+    connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
 
     connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
+    connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
+    connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
@@ -148,6 +150,7 @@ void Sketcher::onPointToolClicked()
     QBrush brush(QColor("#3DB9E7"));
     mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
     mShapes[mShapeId++].push_back(p);
+    mUndoRedo->recordDraw(mShapes);
 }
 
 void Sketcher::onLineToolClicked()
@@ -162,6 +165,7 @@ void Sketcher::onLineToolClicked()
     std::vector<Point> p = l->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(l);
+    mUndoRedo->recordDraw(mShapes);
 }
 
 void Sketcher::onTriangleToolClicked()
@@ -179,6 +183,7 @@ void Sketcher::onTriangleToolClicked()
     std::vector<Point> p = t->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(t);
+    mUndoRedo->recordDraw(mShapes);
 }
 
 void Sketcher::onRectangleToolClicked()
@@ -193,6 +198,7 @@ void Sketcher::onRectangleToolClicked()
     std::vector<Point> p = r->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(r);
+    mUndoRedo->recordDraw(mShapes);
 }
 
 void Sketcher::onCircleToolClicked()
@@ -207,6 +213,7 @@ void Sketcher::onCircleToolClicked()
     std::vector<Point> p = c->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(c);
+    mUndoRedo->recordDraw(mShapes);
 }
 
 void Sketcher::onNewActionTriggered()
@@ -309,6 +316,8 @@ void Sketcher::onCleanActionTriggered()
         if (reply != QMessageBox::Yes)
             return;
     }
+    // record state before clean
+    mUndoRedo->recordClean(mShapes);
 
     // Clear scene
     mScene->clear();
@@ -326,4 +335,12 @@ void Sketcher::onCleanActionTriggered()
     // Clear internal data
     mShapes.clear();
     mShapeId = 0;
+}
+
+void Sketcher::onUndoActionTriggered() {
+    mUndoRedo->undo(mScene, mShapes);
+}
+
+void Sketcher::onRedoActionTriggered() {
+    mUndoRedo->redo(mScene, mShapes);
 }

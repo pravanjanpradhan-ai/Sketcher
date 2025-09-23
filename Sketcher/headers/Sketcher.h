@@ -11,6 +11,7 @@
 #include <QGridLayout>
 #include <QToolBar>
 #include <QToolButton>
+#include "UndoRedo.h"
 
 using SketchData = std::variant<Shape*, Point>;
 class Sketcher : public QMainWindow
@@ -27,6 +28,7 @@ private:
     std::unordered_map<int, std::vector<SketchData>> mShapes;
     int mShapeId = 0;
     bool isSave = false;
+    UndoRedoManager* mUndoRedo = new UndoRedoManager();;
 
 private:
     QWidget* mCentralWidget;
@@ -54,4 +56,6 @@ private slots:
     void onSaveActionTriggered();
 
     void onCleanActionTriggered();
+    void onUndoActionTriggered();
+    void onRedoActionTriggered();
 };
