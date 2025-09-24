@@ -11,6 +11,7 @@
 #include "Circle.h"
 #include "Rectangle.h"
 #include "Triangle.h"
+#include "Polygon.h"
 
 
 Sketcher::Sketcher(QWidget* parent)
@@ -116,6 +117,7 @@ void Sketcher::setupUI()
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
+    connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
 }
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
@@ -193,4 +195,24 @@ void Sketcher::onCircleToolClicked()
     drawConnectedPoints(p);
     //QBrush brush(QColor("#3DB9E7"));
     //mScene->addEllipse(x1 - 2, y1 - 2, 4, 4, QPen(Qt::transparent), brush);
+}
+void Sketcher::onPolygonToolClicked()
+{
+    int n = QInputDialog::getInt(this, "Polygon", "Number of vertices:", 3, 3, 100, 1);
+    std::vector<Point>verts;
+    Point p(0, 0);
+    verts.push_back(p);
+    verts.reserve(n);
+    for (int i = 0; i < n; i++) {
+
+        double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
+        double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
+		Point p(x, y);
+		verts.push_back(p);
+    }
+
+    // Create polygon (calls Shape("Polygon") in its ctor)
+	Polygons poly(verts);
+    std::vector<Point> pt = poly.getCoordinates();
+    drawConnectedPoints(pt);
 }

@@ -41,4 +41,5 @@ private slots:
     void onTriangleToolClicked();
     void onRectangleToolClicked();
     void onCircleToolClicked();
+    void onPolygonToolClicked();
 };

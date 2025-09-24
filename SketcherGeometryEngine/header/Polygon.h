@@ -1,17 +1,20 @@
 #pragma once
-#include "Shape.h"
 #include "Point.h"
+#include "Shape.h"
+#include "Exports.h"
+#include <vector>
 #include "FileWrite.h"
 
-class Polygon : public Shape { // Inheritance
+class SKETCHERGEOMETRYENGINE_API Polygons : public Shape {
 private:
-    int sides;
-    Point p1;
+    std::vector<Point> vertices;
 
 public:
-    Polygon(Point p1,int sides);
+    // Constructor that takes a list of points
+    Polygons(const std::vector<Point>& pts);
+    //Polygon(std::vector<Point> pts);   // <-- add by value
 
-    double area() const override;       // Polymorphism
+    double area() const override;
     double perimeter() const override;
-    std::vector<Point> getCoordinates() const override;  // Polymorphism
+    std::vector<Point> getCoordinates() const override;
 };
