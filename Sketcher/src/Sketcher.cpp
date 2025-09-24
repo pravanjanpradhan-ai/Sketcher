@@ -137,7 +137,9 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
     for (int i = 0; i < p.size(); i++) {
         shape << QPointF(p[i].x, p[i].y);
     }
-    mScene->addPolygon(shape, QPen(Qt::black, 2));
+    QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+    item->setPen(QPen(Qt::black, 2));
+    mScene->addItem(item);
 }
 
 // --- Slots for drawing ---
@@ -148,9 +150,13 @@ void Sketcher::onPointToolClicked()
     double y = QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
     Point p(x, y);
     QBrush brush(QColor("#3DB9E7"));
-    mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
+    QGraphicsEllipseItem* item = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
+    item->setPen(QPen(Qt::transparent));   // border color
+    item->setBrush(brush);
+    
+    mScene->addItem(item);
     mShapes[mShapeId++].push_back(p);
-    mUndoRedo->recordDraw(mShapes);
+    mUndoRedo->recordData(mShapes);
 }
 
 void Sketcher::onLineToolClicked()
@@ -165,7 +171,7 @@ void Sketcher::onLineToolClicked()
     std::vector<Point> p = l->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(l);
-    mUndoRedo->recordDraw(mShapes);
+    //mUndoRedo->recordData(mShapes);
 }
 
 void Sketcher::onTriangleToolClicked()
@@ -183,7 +189,7 @@ void Sketcher::onTriangleToolClicked()
     std::vector<Point> p = t->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(t);
-    mUndoRedo->recordDraw(mShapes);
+    //mUndoRedo->recordData(mShapes);
 }
 
 void Sketcher::onRectangleToolClicked()
@@ -198,7 +204,7 @@ void Sketcher::onRectangleToolClicked()
     std::vector<Point> p = r->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(r);
-    mUndoRedo->recordDraw(mShapes);
+    //mUndoRedo->recordData(mShapes);
 }
 
 void Sketcher::onCircleToolClicked()
@@ -213,7 +219,7 @@ void Sketcher::onCircleToolClicked()
     std::vector<Point> p = c->getCoordinates();
     drawConnectedPoints(p);
     mShapes[mShapeId++].push_back(c);
-    mUndoRedo->recordDraw(mShapes);
+    //mUndoRedo->recordData(mShapes);
 }
 
 void Sketcher::onNewActionTriggered()
@@ -317,7 +323,7 @@ void Sketcher::onCleanActionTriggered()
             return;
     }
     // record state before clean
-    mUndoRedo->recordClean(mShapes);
+    //mUndoRedo->recordData(mShapes);
 
     // Clear scene
     mScene->clear();

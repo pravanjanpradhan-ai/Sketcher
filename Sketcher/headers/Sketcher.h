@@ -28,7 +28,7 @@ private:
     std::unordered_map<int, std::vector<SketchData>> mShapes;
     int mShapeId = 0;
     bool isSave = false;
-    UndoRedoManager* mUndoRedo = new UndoRedoManager();;
+    UndoRedoManager* mUndoRedo = new UndoRedoManager();
 
 private:
     QWidget* mCentralWidget;
