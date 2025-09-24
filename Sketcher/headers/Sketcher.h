@@ -2,13 +2,18 @@
 
 #include <QtWidgets/QMainWindow>
 #include <vector>
+#include <unordered_map>
+#include <variant>
 #include "Point.h"
+#include "Shape.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGridLayout>
 #include <QToolBar>
 #include <QToolButton>
+#include "UndoRedo.h"
 
+using SketchData = std::variant<Shape*, Point>;
 class Sketcher : public QMainWindow
 {
     Q_OBJECT
@@ -20,7 +25,10 @@ public:
 
 private:
     void setupUI();
-    
+    std::unordered_map<int, std::vector<SketchData>> mShapes;
+    int mShapeId = 0;
+    bool isSave = false;
+    UndoRedoManager* mUndoRedo = new UndoRedoManager();
 
 private:
     QWidget* mCentralWidget;
@@ -42,4 +50,12 @@ private slots:
     void onTriangleToolClicked();
     void onRectangleToolClicked();
     void onCircleToolClicked();
+
+    void onNewActionTriggered();
+    void onOpenActionTriggered();
+    void onSaveActionTriggered();
+
+    void onCleanActionTriggered();
+    void onUndoActionTriggered();
+    void onRedoActionTriggered();
 };
