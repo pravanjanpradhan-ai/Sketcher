@@ -62,7 +62,7 @@ void Sketcher::setupUI()
     mPointTool->setIconSize(QSize(32, 32));
     mPointTool->setToolTip("Point");
     mToolBar->addWidget(mPointTool);
-
+    
     // Line Tool
     mLineTool = new QToolButton(mToolBar);
     mLineTool->setIcon(QIcon(":/Sketcher/Line.png"));
