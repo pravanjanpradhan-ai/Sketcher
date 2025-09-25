@@ -50,7 +50,8 @@ void Sketcher::onPointToolClicked()
                                               radius, radius,
                                              QPen(Qt::black),
                                              QBrush(Qt::red));
-    
+    mShapes[mShapeId++].push_back( p1);
+
 }
 void Sketcher::onLineToolClicked()
 {
@@ -60,9 +61,10 @@ void Sketcher::onLineToolClicked()
     double y2 = QInputDialog::getDouble(this, "Line", "Enter Y coordinate for 2nd Point:", 0, -10000, 10000, 2);
     Point p1(x1, y1);
     Point p2(x2, y2);
-    Line l1(p1, p2);
-    std::vector<Point> coord = l1.getCoordinates();
+    Line* l1 = new Line(p1, p2);
+    std::vector<Point> coord = l1->getCoordinates();
     drawConnectedPoints(coord);
+    mShapes[mShapeId++].push_back(l1);
 }
 void Sketcher::onTriangleToolClicked()
 {
@@ -75,9 +77,10 @@ void Sketcher::onTriangleToolClicked()
     Point p1(x1, y1);
     Point p2(x2, y2);
     Point p3(x3, y3);
-    Triangle t(p1, p2, p3);
-    std::vector<Point> coord = t.getCoordinates();
+    Triangle* t= new Triangle(p1, p2, p3);
+    std::vector<Point> coord = t->getCoordinates();
     drawConnectedPoints(coord);
+    mShapes[mShapeId++].push_back(t);
 }
 
 void Sketcher::onRectangleToolClicked()
@@ -88,9 +91,10 @@ void Sketcher::onRectangleToolClicked()
     double y2 = QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate for 2nd Point:", 0, -10000, 10000, 2);
     Point p1(x1, y1);
     Point p2(x2, y2);
-    Rectangles r1(p1, p2);
-    std::vector<Point> coord = r1.getCoordinates();
+    Rectangles* r1 = new Rectangles(p1, p2);
+    std::vector<Point> coord = r1->getCoordinates();
     drawConnectedPoints(coord);
+    mShapes[mShapeId++].push_back( r1);
     
     
 }
@@ -103,10 +107,33 @@ void Sketcher::onCircleToolClicked()
     double y2 = QInputDialog::getDouble(this, "Circle", "Enter Y coordinate for a Point on the circumference:", 0, -10000, 10000, 2);
     Point p1(x1, y1);
     Point p2(x2, y2);
-    Circle c1(p1, p2);
-    std::vector<Point> coord = c1.getCoordinates();
+    Circle* c1= new Circle(p1, p2);
+    std::vector<Point> coord = c1->getCoordinates();
     drawConnectedPoints(coord);
+    mShapes[mShapeId++].push_back(c1);
 }
+
+void Sketcher::onNewFile()
+{
+
+}
+
+void Sketcher::onOpenFile() 
+{
+
+}
+
+void Sketcher::onSaveFile()
+{ 
+
+}
+
+void Sketcher::onSaveAsFile()
+{
+
+}
+
+
 void Sketcher::setupUI() {
     mCentralWidget = new QWidget(this);
     mCentralgridWidget = new QGridLayout(mCentralWidget);
@@ -155,18 +182,54 @@ void Sketcher::setupUI() {
     mCircleTool->setToolTip("Circle");
     mToolBar->addWidget(mCircleTool);
 
-    
-
-   
-
-    
-
-
+ 
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
     connect(mLineTool, &QToolButton::clicked, this, &Sketcher::onLineToolClicked);
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
 
+	mMenuBar = new QMenuBar(this);
+	setMenuBar(mMenuBar);
 
+	mFileMenu = new QMenu("File", this);
+	mMenuBar->addMenu(mFileMenu);
+
+	QAction* newAction = new QAction("New", this);
+    mFileMenu->addAction(newAction);
+    newAction->setShortcut(QKeySequence::New);   // Ctrl+N
+    newAction->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
+
+	QAction* saveAction = new QAction("Save", this);
+	mFileMenu->addAction(saveAction);
+    saveAction->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+    saveAction->setShortcut(QKeySequence::Save);
+
+	QAction* saveAsAction = new QAction("Save As", this);
+	mFileMenu->addAction(saveAsAction);
+    saveAsAction->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+    saveAsAction->setShortcut(QKeySequence::SaveAs);
+
+	QAction* openAction = new QAction("Open", this);  
+	mFileMenu->addAction(openAction);
+    openAction->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
+    openAction->setShortcut(QKeySequence::Open);
+
+	mEditMenu = new QMenu("Edit", this);
+	mMenuBar->addMenu(mEditMenu);
+	QAction* undoAction = new QAction("Undo", this);
+    undoAction->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));
+	mEditMenu->addAction(undoAction);
+    undoAction->setShortcut(QKeySequence::Undo);
+
+	QAction* redoAction = new QAction("Redo", this);
+	mEditMenu->addAction(redoAction);
+    redoAction->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
+    redoAction->setShortcut(QKeySequence::Redo);
+
+	QAction* clearAction = new QAction("Clear", this);
+	mEditMenu->addAction(clearAction);
+    clearAction->setIcon(style()->standardIcon(QStyle::SP_TrashIcon));
+    clearAction->setShortcut(QKeySequence::Cut);
+    
 }
