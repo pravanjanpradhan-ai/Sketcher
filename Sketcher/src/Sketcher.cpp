@@ -146,8 +146,8 @@ void Sketcher::onLineToolClicked()
     double y2 = -QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
     Point p1(x1, y1);
     Point p2(x2, y2);
-    Line l(p1, p2);
-    std::vector<Point> p = l.getCoordinates();
+    Line* l=new Line(p1, p2);
+    std::vector<Point> p = l->getCoordinates();
     drawConnectedPoints(p);
 }
 
@@ -162,8 +162,8 @@ void Sketcher::onTriangleToolClicked()
     Point a(x1, y1);
     Point b(x2, y2);
     Point c(x3, y3);
-    Triangle t(a, b, c);
-    std::vector<Point> p = t.getCoordinates();
+    Triangle* t= new Triangle(a, b, c);
+    std::vector<Point> p = t->getCoordinates();
     drawConnectedPoints(p);
 }
 
@@ -175,8 +175,8 @@ void Sketcher::onRectangleToolClicked()
     double y2 = -QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
     Point a(x1, y1);
     Point c(x2, y2);
-    Rectangles r(a, c);
-    std::vector<Point> p = r.getCoordinates();
+    Rectangles* r= new Rectangles(a, c);
+    std::vector<Point> p = r->getCoordinates();
     drawConnectedPoints(p);
 }
 
@@ -188,9 +188,10 @@ void Sketcher::onCircleToolClicked()
     double y2 = -QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of a circumference Point:", 1, -10000, 10000, 2);
     Point Center(x1, y1);
     Point onCircle(x2, y2);
-    Circle c(Center, onCircle);
-    std::vector<Point> p = c.getCoordinates();
+    Circle* c= new Circle(Center, onCircle);
+    std::vector<Point> p = c->getCoordinates();
     drawConnectedPoints(p);
     //QBrush brush(QColor("#3DB9E7"));
     //mScene->addEllipse(x1 - 2, y1 - 2, 4, 4, QPen(Qt::transparent), brush);
 }
+

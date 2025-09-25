@@ -2,13 +2,15 @@
 
 #include <QtWidgets/QMainWindow>
 #include <vector>
+#include <variant>
 #include "Point.h"
+#include "Shape.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGridLayout>
 #include <QToolBar>
 #include <QToolButton>
-
+using SketchData = std::variant<Shape* ,Point>;
 class Sketcher : public QMainWindow
 {
     Q_OBJECT
@@ -20,6 +22,8 @@ public:
 
 private:
     void setupUI();
+	std::unordered_map<int, std::vector<SketchData>> mshapes; // Store shapes with unique IDs
+	int shapeIDCounter = 0; // Counter to assign unique IDs to shapes
 
 private:
     QWidget* mCentralWidget;
