@@ -17,6 +17,8 @@ public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
     void drawConnectedPoints(std::vector<Point> p);
+    void drawPolyline(const std::vector<Point>& p);
+
 
 private:
     void setupUI();
@@ -42,4 +44,5 @@ private slots:
     void onRectangleToolClicked();
     void onCircleToolClicked();
     void onPolygonToolClicked();
+    void onPolyLineToolClicked();
 };

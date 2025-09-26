@@ -5,6 +5,7 @@
 #include <QSize>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QPainterPath>
 #include "Point.h"
 #include "Line.h"
 #include "Shape.h"
@@ -12,6 +13,7 @@
 #include "Rectangle.h"
 #include "Triangle.h"
 #include "Polygon.h"
+#include "PolyLine.h"
 
 
 Sketcher::Sketcher(QWidget* parent)
@@ -118,6 +120,7 @@ void Sketcher::setupUI()
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
     connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
+    connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
 }
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
@@ -127,6 +130,25 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
         shape << QPointF(p[i].x, p[i].y);
     }
     mScene->addPolygon(shape, QPen(Qt::black, 2));
+}
+
+void Sketcher::drawPolyline(const std::vector<Point>& p)
+{
+    // Draws an open polyline using QPainterPath (no closing segment)
+    if (p.size() < 2) return;
+
+    QPainterPath path;
+    path.moveTo(p[0].x, p[0].y);
+    for (size_t i = 1; i < p.size(); ++i) {
+        path.lineTo(p[i].x, p[i].y);
+    }
+
+    QGraphicsPathItem* item = new QGraphicsPathItem(path);
+    QPen pen(Qt::black, 2);
+    pen.setJoinStyle(Qt::RoundJoin);
+    pen.setCapStyle(Qt::RoundCap);
+    item->setPen(pen);
+    mScene->addItem(item);
 }
 
 // --- Slots for drawing ---
@@ -216,3 +238,24 @@ void Sketcher::onPolygonToolClicked()
     std::vector<Point> pt = poly.getCoordinates();
     drawConnectedPoints(pt);
 }
+
+void Sketcher::onPolyLineToolClicked()
+{
+    int n = QInputDialog::getInt(this, "Polygon", "Number of vertices:", 3, 3, 100, 1);
+
+    std::vector<Point> verts;
+    verts.reserve(n);
+
+    for (int i = 0; i < n; ++i) {
+        double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
+        double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
+        
+
+        verts.emplace_back(x, y);
+    }
+
+    PolyLine* pl = new PolyLine(verts);
+    std::vector<Point> pts = pl->getCoordinates();
+    drawPolyline(pts);
+}
+

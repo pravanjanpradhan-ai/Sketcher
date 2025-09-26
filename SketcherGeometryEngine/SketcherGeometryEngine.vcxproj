@@ -158,6 +158,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="header\Circle.h" />
     <ClInclude Include="header\FileWrite.h" />
+    <ClInclude Include="header\PolyLine.h" />
     <ClInclude Include="header\Line.h" />
     <ClInclude Include="header\Point.h" />
     <ClInclude Include="header\Polygon.h" />
@@ -181,6 +182,7 @@
     <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\Point.cpp" />
     <ClCompile Include="src\Polygon.cpp" />
+    <ClCompile Include="src\PolyLine.cpp" />
     <ClCompile Include="src\Rectangle.cpp" />
     <ClCompile Include="src\Shape.cpp" />
     <ClCompile Include="src\Triangle.cpp" />
