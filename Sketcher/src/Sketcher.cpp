@@ -307,11 +307,18 @@ void Sketcher::onNewActionTriggered()
         // if No → continue without saving
     }
 
-    // Open a new Sketcher window
-    Sketcher* newWindow = new Sketcher();
-    newWindow->show();
-    // Close current window
-    this->close();
+    mScene->clear();
+
+    // Delete logical shapes
+    for (auto& [id, vec] : mShapes) {
+        for (auto& item : vec) {
+            if (std::holds_alternative<Shape*>(item)) {
+                delete std::get<Shape*>(item);
+            }
+        }
+    }
+    mShapes.clear();
+    mShapeId = 0;
 }
 
 void Sketcher::onOpenActionTriggered()
