@@ -50,6 +50,8 @@ private slots:
     void onTriangleToolClicked();
     void onRectangleToolClicked();
     void onCircleToolClicked();
+    void onPolygonToolClicked();
+    void onPolyLineToolClicked();
 
     void onNewActionTriggered();
     void onOpenActionTriggered();

@@ -5,11 +5,14 @@
 #include <QSize>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QPainterPath>
 #include "Point.h"
 #include "Line.h"
 #include "Circle.h"
 #include "Rectangle.h"
 #include "Triangle.h"
+#include "Polygon.h"
+#include "PolyLine.h"
 #include "FileWrite.h"
 
 
@@ -116,6 +119,8 @@ void Sketcher::setupUI()
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
+    connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
+    connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
@@ -222,6 +227,63 @@ void Sketcher::onCircleToolClicked()
     drawConnectedPoints(p, c);
     //mShapes[mShapeId++].push_back(c);
     //mUndoRedo->recordData(mShapes);
+}
+
+void Sketcher::onPolygonToolClicked()
+{
+    int n = QInputDialog::getInt(this, "Polygon", "Number of vertices:", 3, 3, 100, 1);
+    std::vector<Point>verts;
+    Point p(0, 0);
+    verts.push_back(p);
+    verts.reserve(n);
+    for (int i = 0; i < n; i++) {
+
+        double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
+        double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
+        Point p(x, y);
+        verts.push_back(p);
+    }
+
+    // Create polygon (calls Shape("Polygon") in its ctor)
+    Polygons* poly = new Polygons(verts);
+    std::vector<Point> pt = poly->getCoordinates();
+    drawConnectedPoints(pt, poly);
+}
+
+void Sketcher::onPolyLineToolClicked()
+{
+    int n = QInputDialog::getInt(this, "Polygon", "Number of vertices:", 3, 3, 100, 1);
+
+    std::vector<Point> verts;
+    verts.reserve(n);
+
+    for (int i = 0; i < n; ++i) {
+        double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
+        double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
+
+
+        verts.emplace_back(x, y);
+    }
+
+    PolyLine* pl = new PolyLine(verts);
+    std::vector<Point> pts = pl->getCoordinates();
+    // Draws an open polyline using QPainterPath (no closing segment)
+    if (pts.size() < 2) return;
+
+    QPainterPath path;
+    path.moveTo(pts[0].x, pts[0].y);
+    for (size_t i = 1; i < pts.size(); ++i) {
+        path.lineTo(pts[i].x, pts[i].y);
+    }
+
+    QGraphicsPathItem* item = new QGraphicsPathItem(path);
+    QPen pen(Qt::black, 2);
+    pen.setJoinStyle(Qt::RoundJoin);
+    pen.setCapStyle(Qt::RoundCap);
+    item->setPen(pen);
+    mScene->addItem(item);
+    mShapes[mShapeId++].push_back(pl);
+    mUndoRedo->recordAdd(item, pl);
 }
 
 void Sketcher::onNewActionTriggered()
