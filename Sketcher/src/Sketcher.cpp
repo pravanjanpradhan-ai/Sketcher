@@ -36,22 +36,22 @@ void Sketcher::setupUI()
 
     // File Menu
     QMenu* fileMenu = menuBar()->addMenu("File");
-    QAction* newAction = fileMenu->addAction("New");
+    QAction* newAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_FileIcon), "New");
     newAction->setShortcut(QKeySequence::New);   // Ctrl+N
-    QAction* openAction = fileMenu->addAction("Open");
+    QAction* openAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DirOpenIcon), "Open");
     openAction->setShortcut(QKeySequence::Open);   // Ctrl+O
-    QAction* saveAction = fileMenu->addAction("Save");
+    QAction* saveAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogSaveButton), "Save");
     saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
 
 
     // Edit Menu
     QMenu* editMenu = menuBar()->addMenu("Edit");
-    QAction* cleanAction = editMenu->addAction("Clean");
+    QAction* cleanAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_TrashIcon), "Clean");
     cleanAction->setShortcut(Qt::CTRL | Qt::Key_X); // Ctrl+X
-    QAction* undoAction = editMenu->addAction("Undo");
+    QAction* undoAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_ArrowBack), "Undo");
     undoAction->setShortcut(QKeySequence::Undo);   // Ctrl+Z
-    QAction* redoAction = editMenu->addAction("Redo");
-    redoAction->setShortcut(Qt::ALT | Qt::Key_Z);   // Alt+Z
+    QAction* redoAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_ArrowForward), "Redo");
+    redoAction->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Z);   // Ctrl+Shift+Z
 
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
