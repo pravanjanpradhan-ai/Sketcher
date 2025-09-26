@@ -126,7 +126,7 @@ void Sketcher::setupUI()
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
 
-void Sketcher::drawConnectedPoints(std::vector<Point> p)
+void Sketcher::drawConnectedPoints(std::vector<Point> p, Shape* shapes)
 {
     if (p.size() > 36)
     {
@@ -140,6 +140,8 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
     QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
     item->setPen(QPen(Qt::black, 2));
     mScene->addItem(item);
+    mShapes[mShapeId++].push_back(shapes);
+    mUndoRedo->recordAdd(item, shapes);
 }
 
 // --- Slots for drawing ---
@@ -156,7 +158,7 @@ void Sketcher::onPointToolClicked()
     
     mScene->addItem(item);
     mShapes[mShapeId++].push_back(p);
-    mUndoRedo->recordData(mShapes);
+    mUndoRedo->recordAdd(item, p);
 }
 
 void Sketcher::onLineToolClicked()
@@ -169,8 +171,8 @@ void Sketcher::onLineToolClicked()
     Point p2(x2, y2);
     Line* l = new Line(p1, p2);
     std::vector<Point> p = l->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(l);
+    drawConnectedPoints(p, l);
+    //mShapes[mShapeId++].push_back(l);
     //mUndoRedo->recordData(mShapes);
 }
 
@@ -187,8 +189,8 @@ void Sketcher::onTriangleToolClicked()
     Point c(x3, y3);
     Triangle* t = new Triangle(a, b, c);
     std::vector<Point> p = t->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(t);
+    drawConnectedPoints(p, t);
+    //mShapes[mShapeId++].push_back(t);
     //mUndoRedo->recordData(mShapes);
 }
 
@@ -202,8 +204,8 @@ void Sketcher::onRectangleToolClicked()
     Point c(x2, y2);
     Rectangles* r = new Rectangles(a, c);
     std::vector<Point> p = r->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(r);
+    drawConnectedPoints(p, r);
+    //mShapes[mShapeId++].push_back(r);
     //mUndoRedo->recordData(mShapes);
 }
 
@@ -217,8 +219,8 @@ void Sketcher::onCircleToolClicked()
     Point onCircle(x2, y2);
     Circle* c = new Circle(Center, onCircle);
     std::vector<Point> p = c->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(c);
+    drawConnectedPoints(p, c);
+    //mShapes[mShapeId++].push_back(c);
     //mUndoRedo->recordData(mShapes);
 }
 
@@ -279,7 +281,19 @@ void Sketcher::onOpenActionTriggered()
                 Shape* shape = std::get<Shape*>(item);
                 if (shape) {
                     std::vector<Point> p = shape->getCoordinates();
-                    newWindow->drawConnectedPoints(p);
+                    //newWindow->drawConnectedPoints(p, shape);
+                    if (p.size() > 36)
+                    {
+                        p.erase(p.begin());
+                        p.erase(p.begin());
+                    }
+                    QPolygonF shape;
+                    for (int i = 0; i < p.size(); i++) {
+                        shape << QPointF(p[i].x, p[i].y);
+                    }
+                    QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+                    item->setPen(QPen(Qt::black, 2));
+                    newWindow->mScene->addItem(item);
                 }
             }
             else if (std::holds_alternative<Point>(item)) {
@@ -318,35 +332,69 @@ void Sketcher::onCleanActionTriggered()
             "Are you sure you want to remove all shapes?",
             QMessageBox::Yes | QMessageBox::No
         );
-
         if (reply != QMessageBox::Yes)
             return;
     }
-    // record state before clean
-    //mUndoRedo->recordData(mShapes);
 
-    // Clear scene
-    mScene->clear();
-
-    // Delete dynamically allocated shapes
+    // Collect all current items into a snapshot
+    std::vector<Action> snapshot;
     for (auto& [id, vec] : mShapes) {
         for (auto& item : vec) {
-            if (std::holds_alternative<Shape*>(item)) {
-                Shape* shape = std::get<Shape*>(item);
-                delete shape;
+            if (std::holds_alternative<Point>(item)) {
+                Point p = std::get<Point>(item);
+                QBrush brush(QColor("#3DB9E7"));
+                QGraphicsEllipseItem* ellipse = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
+                ellipse->setPen(QPen(Qt::transparent));
+                ellipse->setBrush(brush);
+                snapshot.push_back({ ActionType::AddItem, ellipse, p, {} });
+            }
+            else if (std::holds_alternative<Shape*>(item)) {
+                Shape* s = std::get<Shape*>(item);
+                if (s) {
+                    std::vector<Point> p = s->getCoordinates();
+                    if (p.size() > 36)
+                    {
+                        p.erase(p.begin());
+                        p.erase(p.begin());
+                    }
+                    QPolygonF shape;
+                    for (int i = 0; i < p.size(); i++) {
+                        shape << QPointF(p[i].x, p[i].y);
+                    }
+                    QGraphicsPolygonItem* poly = new QGraphicsPolygonItem(shape);
+                    poly->setPen(QPen(Qt::black, 2));
+                    snapshot.push_back({ ActionType::AddItem, poly, s, {} });
+                }
             }
         }
     }
 
-    // Clear internal data
+    // Record clear action
+    mUndoRedo->recordClear(snapshot);
+
+    // Now actually clear scene
+    mScene->clear();
+
+    // Delete logical shapes
+    for (auto& [id, vec] : mShapes) {
+        for (auto& item : vec) {
+            if (std::holds_alternative<Shape*>(item)) {
+                delete std::get<Shape*>(item);
+            }
+        }
+    }
     mShapes.clear();
     mShapeId = 0;
 }
 
 void Sketcher::onUndoActionTriggered() {
-    mUndoRedo->undo(mScene, mShapes);
+    if (mUndoRedo->canUndo()) {
+        mUndoRedo->undo(mScene);
+    }
 }
 
 void Sketcher::onRedoActionTriggered() {
-    mUndoRedo->redo(mScene, mShapes);
+    if (mUndoRedo->canRedo()) {
+        mUndoRedo->redo(mScene);
+    }
 }

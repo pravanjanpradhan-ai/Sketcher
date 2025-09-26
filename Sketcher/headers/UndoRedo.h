@@ -1,92 +1,120 @@
 #pragma once
-#include <unordered_map>
 #include <vector>
 #include <variant>
 #include <QGraphicsScene>
+#include <QGraphicsItem>
 #include <QPen>
 #include <QBrush>
 #include "Point.h"
 #include "Shape.h"
 
 using SketchData = std::variant<Shape*, Point>;
-using Snapshot = std::unordered_map<int, std::vector<SketchData>>;
+
+enum class ActionType { AddItem, ClearAll };
+
+struct Action {
+    ActionType type;
+    QGraphicsItem* item = nullptr;     // used for AddItem
+    SketchData data;                   // used for AddItem (keeps logical data)
+    std::vector<Action> snapshot;      // used for ClearAll (stores items + data)
+};
 
 class UndoRedoManager {
 private:
-    std::vector<Snapshot> undoStack;
-    std::vector<Snapshot> redoStack;
-    const int MAX_LIMIT = 10;
+    std::vector<Action> undoStack;
+    std::vector<Action> redoStack;
+    const size_t MAX_LIMIT = 10;
+
+    void trimIfNeeded(std::vector<Action>& stack) {
+        if (stack.size() > MAX_LIMIT) {
+            stack.erase(stack.begin(), stack.begin() + (stack.size() - MAX_LIMIT));
+        }
+    }
 
 public:
-    // Save current state into undo stack
-    void recordData(const Snapshot& currentShapes) {
-        if (undoStack.size() == MAX_LIMIT) {
-            undoStack.erase(undoStack.begin());
-        }
-        undoStack.push_back(currentShapes);
+    // Record a single add (point/shape)
+    void recordAdd(QGraphicsItem* item, const SketchData& data) {
+        trimIfNeeded(undoStack);
+        undoStack.push_back(Action{ ActionType::AddItem, item, data, {} });
         redoStack.clear();
     }
 
-    // Undo operation
-    void undo(QGraphicsScene* scene, Snapshot& shapes) {
-        if (undoStack.empty()) return;
+    // Record a ClearAll snapshot.
+    // QUICK FIX: drop previous per-item actions because scene->clear() will delete those items.
+    void recordClear(std::vector<Action> snapshot) {
+        // Drop previous per-item history to avoid dangling pointers
+        undoStack.clear();
+        // store the ClearAll snapshot as the only undo action
+        trimIfNeeded(undoStack);
+        undoStack.push_back(Action{ ActionType::ClearAll, nullptr, {}, std::move(snapshot) });
+        redoStack.clear();
+    }
 
-        redoStack.push_back(shapes);
-        shapes = undoStack.back();
+    void undo(QGraphicsScene* scene) {
+        if (undoStack.empty()) return;
+        Action last = std::move(undoStack.back());
         undoStack.pop_back();
 
-        deldraw(scene, shapes);
-    }
-
-    // Redo operation
-    void redo(QGraphicsScene* scene, Snapshot& shapes) {
-        if (redoStack.empty()) return;
-
-        undoStack.push_back(shapes);
-        shapes = redoStack.back();
-        redoStack.pop_back();
-
-        redraw(scene, shapes);
-    }
-
-    // Helper: check if undo available
-    bool canUndo() const { return !undoStack.empty(); }
-
-    // Helper: check if redo available
-    bool canRedo() const { return !redoStack.empty(); }
-
-private:
-    void deldraw(QGraphicsScene* scene, Snapshot& shapes) {
-        scene->clear();
-        if (!shapes.empty()) {
-            shapes.erase(shapes.begin());
+        if (last.type == ActionType::AddItem) {
+            // In AddItem case the pointer should be valid
+            if (last.item && last.item->scene()) scene->removeItem(last.item);
+            redoStack.push_back(std::move(last));
+        }
+        else { // ClearAll: restore all snapshot items
+            for (auto& a : last.snapshot) {
+                if (a.item) scene->addItem(a.item);
+            }
+            redoStack.push_back(std::move(last));
         }
     }
-    void redraw(QGraphicsScene* scene, const Snapshot& shapes) {
-        for (const auto& [id, vec] : shapes) {
-            for (const auto& data : vec) {
-                if (std::holds_alternative<Point>(data)) {
-                    Point p = std::get<Point>(data);
-                    QBrush brush(QColor("#3DB9E7"));
-                    scene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
+
+    void redo(QGraphicsScene* scene) {
+        if (redoStack.empty()) return;
+        Action last = std::move(redoStack.back());
+        redoStack.pop_back();
+
+        if (last.type == ActionType::AddItem) {
+            if (last.item) scene->addItem(last.item);
+            undoStack.push_back(std::move(last));
+        }
+        else { // ClearAll: remove all snapshot items again
+            for (auto& a : last.snapshot) {
+                if (a.item && a.item->scene()) scene->removeItem(a.item);
+            }
+            undoStack.push_back(std::move(last));
+        }
+    }
+
+    bool canUndo() const { return !undoStack.empty(); }
+    bool canRedo() const { return !redoStack.empty(); }
+
+    // free all kept QGraphicsItem* / Shape* when destroying the manager
+    void clearAndDeleteAll() {
+        auto freeStack = [](std::vector<Action>& stack) {
+            for (auto& a : stack) {
+                if (a.type == ActionType::ClearAll) {
+                    for (auto& s : a.snapshot) {
+                        if (s.item) delete s.item;
+                        if (std::holds_alternative<Shape*>(s.data)) {
+                            // only delete if snapshot used a heap-allocated Shape copy
+                            delete std::get<Shape*>(s.data);
+                        }
+                    }
                 }
-                else if (std::holds_alternative<Shape*>(data)) {
-                    Shape* s = std::get<Shape*>(data);
-                    if (s) {
-                        std::vector<Point> p = s->getCoordinates();
-                        if (p.size() > 36)
-                        {
-                            p.erase(p.begin());
-                            p.erase(p.begin());
-                        }
-                        QPolygonF shape;
-                        for (int i = 0; i < p.size(); i++) {
-                            shape << QPointF(p[i].x, p[i].y);
-                        }
-                        scene->addPolygon(shape, QPen(Qt::black, 2));
+                else {
+                    if (a.item) delete a.item;
+                    if (std::holds_alternative<Shape*>(a.data)) {
+                        delete std::get<Shape*>(a.data);
                     }
                 }
             }
-        }
+            stack.clear();
+            };
+        freeStack(undoStack);
+        freeStack(redoStack);
+    }
+
+    ~UndoRedoManager() {
+        clearAndDeleteAll();
     }
 };

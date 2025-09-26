@@ -23,7 +23,7 @@ bool FileWrite::write(const std::string& filename, const std::unordered_map<int,
 
     for (const auto& pair : shapes) {
         for (const auto& item : pair.second) {  // use 'item' here
-            if (std::holds_alternative<Shape*>(item)) {
+            if (std::holds_alternative<Shape*>(item)) { // varient doc
                 Shape* shape = std::get<Shape*>(item);
                 if (shape) {
                     fout << shape->getName() << ":\n";
@@ -33,7 +33,7 @@ bool FileWrite::write(const std::string& filename, const std::unordered_map<int,
                     }
                 }
             }
-            else if (std::holds_alternative<Point>(item)) {
+            else if (std::holds_alternative<Point>(item)) { // varient doc
                 const Point& pt = std::get<Point>(item);
                 fout << "Point:\n" << pt.x << ", " << pt.y << "\n";
             }

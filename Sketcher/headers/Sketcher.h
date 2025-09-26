@@ -21,7 +21,7 @@ class Sketcher : public QMainWindow
 public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
-    void drawConnectedPoints(std::vector<Point> p);
+    void drawConnectedPoints(std::vector<Point> p, Shape* shapes);
 
 private:
     void setupUI();
