@@ -24,6 +24,9 @@ public:
     void drawConnectedPoints(std::vector<Point> p);
     void drawAxesTool();
 
+    void mouseMoveEvent(QMouseEvent* event) override;  // handle mouse movement
+
+
 private:
     void setupUI();
     std::unordered_map<int, std::vector<SketchData>> mShapes;
@@ -37,6 +40,8 @@ private:
     QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
+	QLabel* mStatusLabel;
+    QLabel* posLabel;   // Label to display mouse position
 
     QToolButton* mPointTool;
     QToolButton* mLineTool;     

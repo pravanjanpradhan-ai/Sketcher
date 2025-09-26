@@ -5,6 +5,9 @@
 #include <QSize>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QStatusBar>
+#include <QLabel>
+#include <QMouseEvent>
 #include "Point.h"
 #include "Line.h"
 #include "Circle.h"
@@ -18,6 +21,9 @@ Sketcher::Sketcher(QWidget* parent)
 {
     setupUI();
     resize(800, 600);
+    drawAxesTool();
+  
+
 }
 
 Sketcher::~Sketcher() {}
@@ -112,10 +118,16 @@ void Sketcher::setupUI()
     mAxesTool->setToolTip("PolyLine");
     mToolBar->addWidget(mAxesTool);
 
-    // Text
-    //QToolButton* Text_btn = new QToolButton(mToolBar);
-    //Text_btn->setText("Text");
-    //mToolBar->addWidget(Text_btn);
+    statusBar()->showMessage("Application Started");
+
+    // status bar label
+    posLabel = new QLabel("X: 0, Y: 0", this);
+    statusBar()->addPermanentWidget(posLabel);
+    // Add a permanent widget (label)
+    mStatusLabel = new QLabel("Ready", this);
+    statusBar()->addPermanentWidget(mStatusLabel);
+
+  
 
     // Connections
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
@@ -123,7 +135,8 @@ void Sketcher::setupUI()
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
-    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
+   // connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
+  //  connect(mCanvas, &QWidget::mouseMoveEvent, this, &Sketcher::mouseMoveEvent);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
@@ -133,6 +146,19 @@ void Sketcher::setupUI()
     connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
+
+void Sketcher::mouseMoveEvent(QMouseEvent* event)
+{
+    posLabel->setText(QString("X: %1, Y: %2")
+        .arg(event->position().x(), 0, 'f', 1)  // 1 decimal place
+		.arg(event->position().y(), 0, 'f', 1));
+    //posLabel->setText(QString("X: %1, Y: %2")
+    //     .arg(pos.x(), 0, 'f', 1)  // 1 decimal place
+    //          .arg(pos.y(), 0, 'f', 1));
+	
+    
+}
+
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
@@ -161,8 +187,12 @@ void Sketcher::drawAxesTool()
     Point px1(x1, y1);
     Point px2(x2, y2);
     Line* xAxes = new Line(px1, px2);
-    std::vector<Point> p = xAxes->getCoordinates();
-    drawConnectedPoints(p);
+    std::vector<Point> px = xAxes->getCoordinates();
+    drawConnectedPoints(px);
+	//QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(xAxes);  
+ //   itemX->setPen(QPen(Qt::blue, 1));
+ //   mScene->addItem(itemX);
+
 
 	double x3 = 0;
 	double y3 = -height;
@@ -171,8 +201,21 @@ void Sketcher::drawAxesTool()
     Point py1(x3, y3);
     Point py2(x4, y4);
     Line* yAxes = new Line(py1, py2);
-    std::vector<Point> q = yAxes->getCoordinates();
-	drawConnectedPoints(q);
+    std::vector<Point> py = yAxes->getCoordinates();
+	drawConnectedPoints(py);
+	//QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(yAxes);
+	//itemY->setPen(QPen(Qt::blue, 1));
+	//mScene->addItem(itemY);
+
+
+    // Draw origin point
+        Point origin(0, 0);
+    QBrush brush(QColor("#FF0000"));
+    QGraphicsEllipseItem* itemOrigin = new QGraphicsEllipseItem(origin.x - 3, origin.y - 3, 6, 6);
+    itemOrigin->setPen(QPen(Qt::transparent));   // border color
+    itemOrigin->setBrush(brush);
+    mScene->addItem(itemOrigin);
+
 }
 
 // --- Slots for drawing ---
