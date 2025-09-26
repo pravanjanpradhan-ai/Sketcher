@@ -105,6 +105,13 @@ void Sketcher::setupUI()
     mPolyLineTool->setToolTip("PolyLine");
     mToolBar->addWidget(mPolyLineTool);
 
+    // Axes Tool
+    mAxesTool = new QToolButton(mToolBar);
+    mAxesTool->setIcon(QIcon(":/Sketcher/PolyLine.png"));
+    mAxesTool->setIconSize(QSize(32, 32));
+    mAxesTool->setToolTip("PolyLine");
+    mToolBar->addWidget(mAxesTool);
+
     // Text
     //QToolButton* Text_btn = new QToolButton(mToolBar);
     //Text_btn->setText("Text");
@@ -116,6 +123,7 @@ void Sketcher::setupUI()
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
+    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
@@ -140,6 +148,31 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
     QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
     item->setPen(QPen(Qt::black, 2));
     mScene->addItem(item);
+}
+
+void Sketcher::drawAxesTool()
+{
+	int width = this->frameSize().width();
+	int height = this->frameSize().height();
+	double x1 = -width ;
+	double y1 = 0;
+	double x2 = width;
+	double y2 = 0;
+    Point px1(x1, y1);
+    Point px2(x2, y2);
+    Line* xAxes = new Line(px1, px2);
+    std::vector<Point> p = xAxes->getCoordinates();
+    drawConnectedPoints(p);
+
+	double x3 = 0;
+	double y3 = -height;
+	double x4 = 0;
+    double y4 = height;
+    Point py1(x3, y3);
+    Point py2(x4, y4);
+    Line* yAxes = new Line(py1, py2);
+    std::vector<Point> q = yAxes->getCoordinates();
+	drawConnectedPoints(q);
 }
 
 // --- Slots for drawing ---

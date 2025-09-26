@@ -38,8 +38,6 @@ private:
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
 
-   
-
     QToolButton* mPointTool;
     QToolButton* mLineTool;     
     QToolButton* mTriangleTool;
