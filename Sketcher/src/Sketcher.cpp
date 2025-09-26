@@ -25,7 +25,7 @@ Sketcher::~Sketcher() {}
 void Sketcher::setupUI()
 {
     // Central widget and layout
-    mCentralWidget = new QWidget(this);
+        mCentralWidget = new QWidget(this);
     mCentralgridWidget = new QGridLayout(mCentralWidget);
 
     // Scene + Canvas
