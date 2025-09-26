@@ -22,6 +22,7 @@ public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
     void drawConnectedPoints(std::vector<Point> p);
+    void drawAxesTool();
 
 private:
     void setupUI();
@@ -36,6 +37,9 @@ private:
     QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
+
+   
+
     QToolButton* mPointTool;
     QToolButton* mLineTool;     
     QToolButton* mTriangleTool;
@@ -43,6 +47,7 @@ private:
     QToolButton* mCircleTool;
     QToolButton* mPolygonTool;
     QToolButton* mPolyLineTool;
+    QToolButton* mAxesTool;
 
 private slots:
     void onPointToolClicked();

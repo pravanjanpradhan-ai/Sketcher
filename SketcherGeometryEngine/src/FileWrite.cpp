@@ -44,6 +44,12 @@ bool FileWrite::write(const std::string& filename, const std::unordered_map<int,
     return true;
 }
 
+
+
+
+
+
+
 bool FileWrite::read(const std::string& filename, std::unordered_map<int, std::vector<SketchData>>& shapes)
 {
     std::ifstream fin(filename);
