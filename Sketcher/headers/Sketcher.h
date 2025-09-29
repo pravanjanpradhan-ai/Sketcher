@@ -14,6 +14,7 @@
 #include <QGridLayout>
 #include <QToolBar>
 #include <QToolButton>
+#include <QVBoxLayout>
 #include "UndoRedo.h"
 
 using SketchData = std::variant<Shape*, Point>;
@@ -30,9 +31,6 @@ public:
 protected:
     void mouseMoveEvent(QMouseEvent* event) override;  // handle mouse movement
 
-//signals:
-//   void mouseMovedOnScene(const QPointF& scenePos);   // signal to send scene coordinates
-
 private:
     void setupUI();
     std::unordered_map<int, std::vector<SketchData>> mShapes;
@@ -42,8 +40,8 @@ private:
 
 private:
     QWidget* mCentralWidget;
-    QGraphicsView* mCanvas;
-    QGraphicsScene* mScene;
+QGraphicsView* mCanvas;
+   QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
 	QStatusBar* mStatusBar;
@@ -71,7 +69,7 @@ private slots:
     void onSaveActionTriggered();
 
     void onCleanActionTriggered();
-    void onUndoActionTriggered();
-    void onRedoActionTriggered();
+   // void onUndoActionTriggered();
+   // void onRedoActionTriggered();
 
 };

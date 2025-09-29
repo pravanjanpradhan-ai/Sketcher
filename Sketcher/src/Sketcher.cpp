@@ -32,18 +32,22 @@ void Sketcher::setupUI()
 {
     // Central widget and layout
     mCentralWidget = new QWidget(this);
+   
     mCentralgridWidget = new QGridLayout(mCentralWidget);
 
     // Scene + Canvas
     mScene = new QGraphicsScene(this);
-    mCanvas = new QGraphicsView(mScene, mCentralWidget);
+   mCanvas = new QGraphicsView(mScene, mCentralWidget);
+   mCanvas->setMouseTracking(true); // important
     mCentralgridWidget->addWidget(mCanvas,0,0);
     setCentralWidget(mCentralWidget);
 
+    /*QVBoxLayout* layout = new QVBoxLayout(mCentralWidget);
+    layout->addWidget(mCanvas);*/
    
-   
+  //  mScene->addRect(0, 0, 400, 300);
 
-    // Add a grid for reference
+     //Add a grid for reference
     int width = 2000;
     int height = 2000;
     for (int x = -width; x <= width; x += 50)
@@ -140,8 +144,8 @@ void Sketcher::setupUI()
     // Status Bar
     mStatusBar = new QStatusBar(this);
     setStatusBar(mStatusBar);
-    posLabel = new QLabel(this);
-    posLabel = new QLabel("X: 0, Y: 0", this);
+   posLabel = new QLabel(this);
+    //posLabel = new QLabel("X: 0, Y: 0", this);
     mStatusBar->showMessage("Application Started");
     // status bar label for mouse position
     mStatusBar->addPermanentWidget(posLabel);
@@ -165,18 +169,34 @@ void Sketcher::setupUI()
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
     
     connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
-    connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
-    connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
+   // connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
+   // connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
-
 
 
 void Sketcher::mouseMoveEvent(QMouseEvent* event)
 {
-    int x = event->pos().x();
-    int y = event->pos().y();
-    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+    // Check if mouse is over the canvas
+    QPoint viewPos = mCanvas->mapFromParent(event->pos());
+    if (mCanvas->rect().contains(viewPos)) {
+        // Map to scene coordinates
+        QPointF scenePos = mCanvas->mapToScene(viewPos);
+        int x = static_cast<int>(scenePos.x());
+        int y = static_cast<int>(scenePos.y());
+        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+    }
+    else {
+        mStatusLabel->setText("X: -, Y: -");
+    }
+
+    QMainWindow::mouseMoveEvent(event);
 }
+//void Sketcher::mouseMoveEvent(QMouseEvent* event)
+//{
+//    int x = event->pos().x();
+//    int y = event->pos().y();
+//    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+//}
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
@@ -210,9 +230,9 @@ void Sketcher::drawAxesTool()
     Line* xAxes = new Line(px1, px2);
     std::vector<Point> px = xAxes->getCoordinates();
     drawConnectedPoints(px);
-	//QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(xAxes);  
- //   itemX->setPen(QPen(Qt::blue, 1));
- //   mScene->addItem(itemX);
+	/*QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(xAxes);  
+   itemX->setPen(QPen(Qt::blue, 1));
+  mScene->addItem(itemX);*/
 
 
 	double x3 = 0;
@@ -224,9 +244,9 @@ void Sketcher::drawAxesTool()
     Line* yAxes = new Line(py1, py2);
     std::vector<Point> py = yAxes->getCoordinates();
 	drawConnectedPoints(py);
-	//QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(yAxes);
-	//itemY->setPen(QPen(Qt::blue, 1));
-	//mScene->addItem(itemY);
+	/*QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(yAxes);
+	itemY->setPen(QPen(Qt::blue, 1));
+	mScene->addItem(itemY);*/
 
 
     // Draw origin point
@@ -251,7 +271,7 @@ void Sketcher::onPointToolClicked()
     item->setPen(QPen(Qt::transparent));   // border color
     item->setBrush(brush);
     
-    mScene->addItem(item);
+   // mScene->addItem(item);
     mShapes[mShapeId++].push_back(p);
     mUndoRedo->recordData(mShapes);
 }
@@ -382,8 +402,8 @@ void Sketcher::onOpenActionTriggered()
             else if (std::holds_alternative<Point>(item)) {
                 Point pt = std::get<Point>(item);
                 QBrush brush(QColor("#3DB9E7"));
-                newWindow->mScene->addEllipse(pt.x - 2, pt.y - 2, 4, 4,
-                    QPen(Qt::transparent), brush);
+                //newWindow->mScene->addEllipse(pt.x - 2, pt.y - 2, 4, 4,
+                   // QPen(Qt::transparent), brush);
             }
         }
     }
@@ -423,7 +443,7 @@ void Sketcher::onCleanActionTriggered()
     //mUndoRedo->recordData(mShapes);
 
     // Clear scene
-    mScene->clear();
+   // mScene->clear();
 
     // Delete dynamically allocated shapes
     for (auto& [id, vec] : mShapes) {
@@ -440,10 +460,10 @@ void Sketcher::onCleanActionTriggered()
     mShapeId = 0;
 }
 
-void Sketcher::onUndoActionTriggered() {
-    mUndoRedo->undo(mScene, mShapes);
-}
+//void Sketcher::onUndoActionTriggered() {
+//    mUndoRedo->undo(mScene, mShapes);
+//}
 
-void Sketcher::onRedoActionTriggered() {
-    mUndoRedo->redo(mScene, mShapes);
-}
+//void Sketcher::onRedoActionTriggered() {
+//    mUndoRedo->redo(mScene, mShapes);
+//}
