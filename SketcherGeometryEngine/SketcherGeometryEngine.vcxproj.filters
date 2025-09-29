@@ -51,6 +51,12 @@
     <ClInclude Include="header\Circle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="header\Polygon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="header\PolyLine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SketcherGeometryEngine.cpp">
@@ -81,6 +87,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Circle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Polygon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PolyLine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
