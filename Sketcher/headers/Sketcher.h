@@ -34,7 +34,7 @@ public:
     void cancelShape();
 
 protected:
-    void mouseMoveEvent(QMouseEvent* event) override;  // handle mouse movement
+    void mouseMoveEvent(QMouseEvent* event) override;  //Latesh -  status bar - handle mouse movement
 
 private:
     void setupUI();

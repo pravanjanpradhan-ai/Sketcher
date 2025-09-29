@@ -16,11 +16,11 @@ void CanvasView::mousePressEvent(QMouseEvent* event) {
 
     QPointF pos = mapToScene(event->pos());
 
-    if (event->button() == Qt::RightButton) {
-        // Right click -> finish polygon/polyline
-        mSketcher->finishShape();
-    }
-    else if (event->button() == Qt::LeftButton) {
+    //if (event->button() == Qt::RightButton) {
+    //    // Right click -> finish polygon/polyline
+    //    mSketcher->finishShape();
+    //}
+    if (event->button() == Qt::LeftButton) {
         // Left click -> add point
         mSketcher->handleCanvasClick(pos);
     }

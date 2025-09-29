@@ -49,10 +49,7 @@ void Sketcher::setupUI()
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
     setCentralWidget(mCentralWidget);
     mCanvas->scale(1, -1);
-    /*QVBoxLayout* layout = new QVBoxLayout(mCentralWidget);
-    layout->addWidget(mCanvas);*/
-   
-  //  mScene->addRect(0, 0, 400, 300);
+
 
      //Add a grid for reference
     int width = 2000;
@@ -139,14 +136,14 @@ void Sketcher::setupUI()
     mAxesTool = new QToolButton(mToolBar);
     mAxesTool->setIcon(QIcon(":/Sketcher/PolyLine.png"));
     mAxesTool->setIconSize(QSize(32, 32));
-    mAxesTool->setToolTip("PolyLine");
+    mAxesTool->setToolTip("Axis");
     mToolBar->addWidget(mAxesTool);
 
 
 
     setMouseTracking(true);
-    if (mCentralWidget)
-        mCentralWidget->setMouseTracking(true);
+    //if (mCentralWidget)
+    mCentralWidget->setMouseTracking(true);
 
     // Status Bar
     mStatusBar = new QStatusBar(this);
@@ -167,19 +164,18 @@ void Sketcher::setupUI()
     connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
-   // connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
-   //connect(mCanvas, &QGraphicsScene::mouseMoved, this, &Sketcher::mouseMoveEvent);
-   //connect(mCanvas, SIGNAL(mouseMovedOnScene(QPointF)), this, SLOT(updateMousePosition(QPointF)));
     connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
     connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
+
+    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
     
     connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
-   // connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
-   // connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
+    connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
+    connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
 
 
@@ -190,8 +186,10 @@ void Sketcher::mouseMoveEvent(QMouseEvent* event)
     if (mCanvas->rect().contains(viewPos)) {
         // Map to scene coordinates
         QPointF scenePos = mCanvas->mapToScene(viewPos);
-        int x = static_cast<int>(scenePos.x());
-        int y = static_cast<int>(scenePos.y());
+        int x = event->pos().x();
+        int y = event->pos().y();
+       /* int x = static_cast<int>(scenePos.x());
+        int y = static_cast<int>(scenePos.y());*/
         mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
     }
     else {
@@ -240,10 +238,13 @@ void Sketcher::drawAxesTool()
     Point px2(x2, y2);
     Line* xAxes = new Line(px1, px2);
     std::vector<Point> px = xAxes->getCoordinates();
-    drawConnectedPoints(px, xAxes);
-	/*QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(xAxes);  
-   itemX->setPen(QPen(Qt::blue, 1));
-  mScene->addItem(itemX);*/
+    QPolygonF shapeX;
+    for (int i = 0; i < px.size(); i++) {
+        shapeX << QPointF(px[i].x, px[i].y);
+    }
+    QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(shapeX);
+    itemX->setPen(QPen(Qt::blue, 1));
+    mScene->addItem(itemX);
 
 
 	double x3 = 0;
@@ -254,16 +255,19 @@ void Sketcher::drawAxesTool()
     Point py2(x4, y4);
     Line* yAxes = new Line(py1, py2);
     std::vector<Point> py = yAxes->getCoordinates();
-	drawConnectedPoints(py, yAxes);
-	/*QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(yAxes);
+    QPolygonF shapeY;
+    for (int i = 0; i < py.size(); i++) {
+        shapeY << QPointF(py[i].x, py[i].y);
+    }
+	QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(shapeY);
 	itemY->setPen(QPen(Qt::blue, 1));
-	mScene->addItem(itemY);*/
+	mScene->addItem(itemY);
 
 
     // Draw origin point
         Point origin(0, 0);
     QBrush brush(QColor("#FF0000"));
-    QGraphicsEllipseItem* itemOrigin = new QGraphicsEllipseItem(origin.x - 3, origin.y - 3, 6, 6);
+    QGraphicsEllipseItem* itemOrigin = new QGraphicsEllipseItem(origin.x - 2, origin.y - 2, 4, 4);
     itemOrigin->setPen(QPen(Qt::transparent));   // border color
     itemOrigin->setBrush(brush);
     mScene->addItem(itemOrigin);
@@ -279,20 +283,6 @@ void Sketcher::finishShape() {
     else if (mCurrentTool == ToolType::PolyLine && tempPoints.size() >= 2) {
         PolyLine* pl = new PolyLine(tempPoints);
 
-void Sketcher::onPointToolClicked()
-{
-    double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
-    double y = QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
-    Point p(x, y);
-    QBrush brush(QColor("#3DB9E7"));
-    QGraphicsEllipseItem* item = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
-    item->setPen(QPen(Qt::transparent));   // border color
-    item->setBrush(brush);
-    
-   // mScene->addItem(item);
-    mShapes[mShapeId++].push_back(p);
-    mUndoRedo->recordData(mShapes);
-}
         QPainterPath path;
         path.moveTo(tempPoints[0].x, tempPoints[0].y);
         for (size_t i = 1; i < tempPoints.size(); ++i) {
