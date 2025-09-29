@@ -33,7 +33,9 @@ void Sketcher::setupUI()
 
     // Scene + Canvas
     mScene = new QGraphicsScene(this);
-    mCanvas = new QGraphicsView(mScene, mCentralWidget);
+    //mCanvas = new QGraphicsView(mScene, mCentralWidget);
+    mCanvas = new CanvasView(mScene, mCentralWidget);
+    static_cast<CanvasView*>(mCanvas)->setSketcher(this);
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
     setCentralWidget(mCentralWidget);
 
@@ -149,141 +151,137 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p, Shape* shapes)
     mUndoRedo->recordAdd(item, shapes);
 }
 
+void Sketcher::finishShape() {
+    if (mCurrentTool == ToolType::Polygon && tempPoints.size() >= 3) {
+        Polygons* poly = new Polygons(tempPoints);
+        drawConnectedPoints(poly->getCoordinates(), poly);
+    }
+    else if (mCurrentTool == ToolType::PolyLine && tempPoints.size() >= 2) {
+        PolyLine* pl = new PolyLine(tempPoints);
+
+        QPainterPath path;
+        path.moveTo(tempPoints[0].x, tempPoints[0].y);
+        for (size_t i = 1; i < tempPoints.size(); ++i) {
+            path.lineTo(tempPoints[i].x, tempPoints[i].y);
+        }
+
+        QGraphicsPathItem* item = new QGraphicsPathItem(path);
+        QPen pen(Qt::black, 2);
+        pen.setJoinStyle(Qt::RoundJoin);
+        pen.setCapStyle(Qt::RoundCap);
+        item->setPen(pen);
+        mScene->addItem(item);
+        mShapes[mShapeId++].push_back(pl);
+        mUndoRedo->recordAdd(item, pl);
+    }
+
+    tempPoints.clear();
+}
+
+void Sketcher::cancelShape() {
+    tempPoints.clear();
+}
+
+
+void Sketcher::handleCanvasClick(QPointF pos) {
+    Point p(pos.x(), pos.y());
+
+    switch (mCurrentTool) {
+    case ToolType::Point: {
+        QBrush brush(QColor("#3DB9E7"));
+        auto* item = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
+        item->setPen(QPen(Qt::transparent));
+        item->setBrush(brush);
+        mScene->addItem(item);
+        mShapes[mShapeId++].push_back(p);
+        mUndoRedo->recordAdd(item, p);
+        break;
+    }
+    case ToolType::Line:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 2) {
+            Line* l = new Line(tempPoints[0], tempPoints[1]);
+            auto coords = l->getCoordinates();
+            drawConnectedPoints(coords, l);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Triangle:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 3) {
+            Triangle* t = new Triangle(tempPoints[0], tempPoints[1], tempPoints[2]);
+            auto coords = t->getCoordinates();
+            drawConnectedPoints(coords, t);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Rectangle:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 2) {
+            Rectangles* r = new Rectangles(tempPoints[0], tempPoints[1]);
+            auto coords = r->getCoordinates();
+            drawConnectedPoints(coords, r);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Circle:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 2) {
+            Circle* c = new Circle(tempPoints[0], tempPoints[1]);
+            auto coords = c->getCoordinates();
+            drawConnectedPoints(coords, c);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Polygon:
+    case ToolType::PolyLine:
+        // here you can collect multiple clicks until user presses "Enter" or right-clicks
+        tempPoints.push_back(p);
+        break;
+
+    default: break;
+    }
+}
+
 // --- Slots for drawing ---
 
 void Sketcher::onPointToolClicked()
 {
-    double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
-    double y = QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
-    Point p(x, y);
-    QBrush brush(QColor("#3DB9E7"));
-    QGraphicsEllipseItem* item = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
-    item->setPen(QPen(Qt::transparent));   // border color
-    item->setBrush(brush);
-    
-    mScene->addItem(item);
-    mShapes[mShapeId++].push_back(p);
-    mUndoRedo->recordAdd(item, p);
+    mCurrentTool = ToolType::Point;
 }
 
 void Sketcher::onLineToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Line* l = new Line(p1, p2);
-    std::vector<Point> p = l->getCoordinates();
-    drawConnectedPoints(p, l);
-    //mShapes[mShapeId++].push_back(l);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Line;
 }
 
 void Sketcher::onTriangleToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double x3 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 3rd Point:", 0, -10000, 10000, 2);
-    double y3 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 3rd Point:", 1, -10000, 10000, 2);
-    Point a(x1, y1);
-    Point b(x2, y2);
-    Point c(x3, y3);
-    Triangle* t = new Triangle(a, b, c);
-    std::vector<Point> p = t->getCoordinates();
-    drawConnectedPoints(p, t);
-    //mShapes[mShapeId++].push_back(t);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Triangle;
 }
 
 void Sketcher::onRectangleToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    Point a(x1, y1);
-    Point c(x2, y2);
-    Rectangles* r = new Rectangles(a, c);
-    std::vector<Point> p = r->getCoordinates();
-    drawConnectedPoints(p, r);
-    //mShapes[mShapeId++].push_back(r);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Rectangle;
 }
 
 void Sketcher::onCircleToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of Center:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of Center:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of a circumference Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of a circumference Point:", 1, -10000, 10000, 2);
-    Point Center(x1, y1);
-    Point onCircle(x2, y2);
-    Circle* c = new Circle(Center, onCircle);
-    std::vector<Point> p = c->getCoordinates();
-    drawConnectedPoints(p, c);
-    //mShapes[mShapeId++].push_back(c);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Circle;
 }
 
 void Sketcher::onPolygonToolClicked()
 {
-    int n = QInputDialog::getInt(this, "Polygon", "Number of vertices:", 3, 3, 100, 1);
-    std::vector<Point>verts;
-    Point p(0, 0);
-    verts.push_back(p);
-    verts.reserve(n);
-    for (int i = 0; i < n; i++) {
-
-        double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
-        double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
-        Point p(x, y);
-        verts.push_back(p);
-    }
-
-    // Create polygon (calls Shape("Polygon") in its ctor)
-    Polygons* poly = new Polygons(verts);
-    std::vector<Point> pt = poly->getCoordinates();
-    drawConnectedPoints(pt, poly);
+    mCurrentTool = ToolType::Polygon;
 }
 
 void Sketcher::onPolyLineToolClicked()
 {
-    int n = QInputDialog::getInt(this, "Polygon", "Number of vertices:", 3, 3, 100, 1);
-
-    std::vector<Point> verts;
-    verts.reserve(n);
-
-    for (int i = 0; i < n; ++i) {
-        double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
-        double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
-
-
-        verts.emplace_back(x, y);
-    }
-
-    PolyLine* pl = new PolyLine(verts);
-    std::vector<Point> pts = pl->getCoordinates();
-    // Draws an open polyline using QPainterPath (no closing segment)
-    if (pts.size() < 2) return;
-
-    QPainterPath path;
-    path.moveTo(pts[0].x, pts[0].y);
-    for (size_t i = 1; i < pts.size(); ++i) {
-        path.lineTo(pts[i].x, pts[i].y);
-    }
-
-    QGraphicsPathItem* item = new QGraphicsPathItem(path);
-    QPen pen(Qt::black, 2);
-    pen.setJoinStyle(Qt::RoundJoin);
-    pen.setCapStyle(Qt::RoundCap);
-    item->setPen(pen);
-    mScene->addItem(item);
-    mShapes[mShapeId++].push_back(pl);
-    mUndoRedo->recordAdd(item, pl);
+    mCurrentTool = ToolType::PolyLine;
 }
 
 void Sketcher::onNewActionTriggered()

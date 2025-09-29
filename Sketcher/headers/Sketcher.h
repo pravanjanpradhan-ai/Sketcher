@@ -12,6 +12,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include "UndoRedo.h"
+#include "CanvasView.h"
 
 using SketchData = std::variant<Shape*, Point>;
 class Sketcher : public QMainWindow
@@ -22,6 +23,9 @@ public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
     void drawConnectedPoints(std::vector<Point> p, Shape* shapes);
+    void handleCanvasClick(QPointF pos);
+    void finishShape();
+    void cancelShape();
 
 private:
     void setupUI();
@@ -29,6 +33,8 @@ private:
     int mShapeId = 0;
     bool isSave = false;
     UndoRedoManager* mUndoRedo = new UndoRedoManager();
+    enum class ToolType { None, Point, Line, Triangle, Rectangle, Circle, Polygon, PolyLine };
+    ToolType mCurrentTool = ToolType::None;
 
 private:
     QWidget* mCentralWidget;
@@ -43,6 +49,7 @@ private:
     QToolButton* mCircleTool;
     QToolButton* mPolygonTool;
     QToolButton* mPolyLineTool;
+    std::vector<Point> tempPoints;
 
 private slots:
     void onPointToolClicked();
