@@ -60,7 +60,7 @@ QGraphicsView* mCanvas;
     QToolButton* mTriangleTool;
     QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
-    QToolButton* mPolygonTool;
+    QToolButton* mPolygonTool; 
     QToolButton* mPolyLineTool;
     QToolButton* mAxesTool;
     std::vector<Point> tempPoints;
