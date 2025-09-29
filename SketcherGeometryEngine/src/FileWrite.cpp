@@ -22,22 +22,25 @@ bool FileWrite::write(const std::string& filename, const std::unordered_map<int,
         return false;
 
     for (const auto& pair : shapes) {
-        for (const auto& item : pair.second) {  // use 'item' here
-            if (std::holds_alternative<Shape*>(item)) { // varient doc
+        for (const auto& item : pair.second) {
+            if (std::holds_alternative<Shape*>(item)) {
                 Shape* shape = std::get<Shape*>(item);
                 if (shape) {
+                    // Use your getName() method
                     fout << shape->getName() << ":\n";
                     const auto& coords = shape->getCoordinates();
                     for (const auto& pt : coords) {
-                        fout << pt.x << ", " << pt.y << "\n";
+                        fout << pt.x << " " << pt.y << "\n";
                     }
                 }
             }
-            else if (std::holds_alternative<Point>(item)) { // varient doc
+            else if (std::holds_alternative<Point>(item)) {
                 const Point& pt = std::get<Point>(item);
-                fout << "Point:\n" << pt.x << ", " << pt.y << "\n";
+                fout << "Point:\n"
+                    << pt.x << " " << pt.y << "\n";
             }
         }
+        fout << "\n"; // separate different shape groups
     }
 
     fout.close();
