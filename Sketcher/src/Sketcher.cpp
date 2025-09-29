@@ -133,15 +133,80 @@ void Sketcher::onSaveAsFile()
 
 }
 
+// Simple view with pan (middle mouse) and wheel zoom
+class MyGraphicsView : public QGraphicsView {
+public:
+    MyGraphicsView(QWidget* parent = nullptr) : QGraphicsView(parent) {
+        setRenderHint(QPainter::Antialiasing);
+		// Added such that shapes are not blurry when zoomed.
+        setDragMode(QGraphicsView::NoDrag); 
+		// NODrag to implement custom panning we can use middle mouse button, ScrollHandDrag can be used for pannng with left mouse button
+        setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        // Zoom around mouse cursor
+        setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+    }
+
+protected:
+    void wheelEvent(QWheelEvent* event) override {
+        // simple step zoom
+        const double factor = 1.15;
+        if (event->angleDelta().y() > 0) {
+            scale(factor, factor); // zoom in
+        }
+        else {
+            scale(1.0 / factor, 1.0 / factor); // zoom out
+        }
+    }
+
+    void mousePressEvent(QMouseEvent* event) override {
+        if (event->button() == Qt::MiddleButton) {
+            m_panning = true;
+            m_lastPanPoint = event->pos();
+            setCursor(Qt::ClosedHandCursor);
+            event->accept();
+            return;
+        }
+        QGraphicsView::mousePressEvent(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent* event) override {
+        if (m_panning) {
+            // Move the view by the delta in view coordinates
+            QPoint delta = event->pos() - m_lastPanPoint;
+            m_lastPanPoint = event->pos();
+            horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+            verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+            event->accept();
+            return;
+        }
+        QGraphicsView::mouseMoveEvent(event);
+    }
+
+    void mouseReleaseEvent(QMouseEvent* event) override {
+        if (event->button() == Qt::MiddleButton && m_panning) {
+            m_panning = false;
+            setCursor(Qt::ArrowCursor);
+            event->accept();
+            return;
+        }
+        QGraphicsView::mouseReleaseEvent(event);
+    }
+
+private:
+    bool m_panning = false;
+    QPoint m_lastPanPoint;
+};
+
 
 void Sketcher::setupUI() {
     mCentralWidget = new QWidget(this);
-    mCentralgridWidget = new QGridLayout(mCentralWidget);
     setCentralWidget(mCentralWidget);
+    mCentralgridWidget = new QGridLayout(mCentralWidget);
+    
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
 
-    mGraphicsView = new QGraphicsView(this);
+    mGraphicsView = new MyGraphicsView(this);
     mCentralgridWidget->addWidget(mGraphicsView);
     mScene = new QGraphicsScene(this);
     mGraphicsView->setScene(mScene);
@@ -233,3 +298,4 @@ void Sketcher::setupUI() {
     clearAction->setShortcut(QKeySequence::Cut);
     
 }
+
