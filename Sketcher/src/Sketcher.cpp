@@ -22,9 +22,7 @@ Sketcher::Sketcher(QWidget* parent)
     setupUI();
     resize(800, 600);
     drawAxesTool();
-	/*mouseMoveEvent(nullptr);
-    setMouseTracking(true);*/
-   // mouseMoveEvent(QMouseEvent * event);
+    //mouseMoveEvent();
 
 }
 
@@ -39,11 +37,21 @@ void Sketcher::setupUI()
     // Scene + Canvas
     mScene = new QGraphicsScene(this);
     mCanvas = new QGraphicsView(mScene, mCentralWidget);
-    mCentralgridWidget->addWidget(mCanvas, 0, 0);
+    mCentralgridWidget->addWidget(mCanvas,0,0);
     setCentralWidget(mCentralWidget);
 
    
    
+
+    // Add a grid for reference
+    int width = 2000;
+    int height = 2000;
+    for (int x = -width; x <= width; x += 50)
+        mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
+    for (int y = -height; y <= height; y += 50)
+        mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
+
+
     // File Menu
     QMenu* fileMenu = menuBar()->addMenu("File");
     QAction* newAction = fileMenu->addAction("New");
@@ -124,20 +132,23 @@ void Sketcher::setupUI()
     mToolBar->addWidget(mAxesTool);
 
 
+
+    setMouseTracking(true);
+    if (mCentralWidget)
+        mCentralWidget->setMouseTracking(true);
+
+    // Status Bar
     mStatusBar = new QStatusBar(this);
     setStatusBar(mStatusBar);
-
-    mStatusBar->showMessage("Application Started");
-    // status bar label
-	posLabel = new QLabel(this);
-
+    posLabel = new QLabel(this);
     posLabel = new QLabel("X: 0, Y: 0", this);
+    mStatusBar->showMessage("Application Started");
+    // status bar label for mouse position
     mStatusBar->addPermanentWidget(posLabel);
     // Add a permanent widget (label)
     mStatusLabel = new QLabel("Ready", this);
     mStatusBar->addPermanentWidget(mStatusLabel);
 
-  
 
     // Connections
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
@@ -146,7 +157,8 @@ void Sketcher::setupUI()
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
    // connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
-  //connect(mCanvas, &QGraphicsScene::mouseMoved, this, &Sketcher::mouseMoveEvent);
+   //connect(mCanvas, &QGraphicsScene::mouseMoved, this, &Sketcher::mouseMoveEvent);
+   //connect(mCanvas, SIGNAL(mouseMovedOnScene(QPointF)), this, SLOT(updateMousePosition(QPointF)));
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
@@ -159,6 +171,12 @@ void Sketcher::setupUI()
 
 
 
+void Sketcher::mouseMoveEvent(QMouseEvent* event)
+{
+    int x = event->pos().x();
+    int y = event->pos().y();
+    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+}
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
@@ -181,8 +199,8 @@ void Sketcher::drawAxesTool()
 	//int width = this->size().width();
 	//int height = this->size().height();
 
-    int width = 1500;
-    int height = 1200;
+    int width = 2000;
+    int height = 2000;
 	double x1 = -width ;
 	double y1 = 0;
 	double x2 = width;
