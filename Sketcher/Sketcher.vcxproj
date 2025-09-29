@@ -123,17 +123,20 @@
     <QtRcc Include="Sketcher.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CanvasView.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Sketcher.cpp" />
     <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\UndoRedo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="headers\Sketcher.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="headers\CanvasView.h" />
     <ClInclude Include="headers\stdafx.h" />
     <ClInclude Include="headers\UndoRedo.h" />
   </ItemGroup>

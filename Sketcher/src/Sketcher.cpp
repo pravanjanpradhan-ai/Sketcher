@@ -5,6 +5,7 @@
 #include <QSize>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QPainterPath>
 #include <QStatusBar>
 #include <QLabel>
 #include <QMouseEvent>
@@ -13,6 +14,8 @@
 #include "Circle.h"
 #include "Rectangle.h"
 #include "Triangle.h"
+#include "Polygon.h"
+#include "PolyLine.h"
 #include "FileWrite.h"
 
 
@@ -40,6 +43,10 @@ void Sketcher::setupUI()
    mCanvas = new QGraphicsView(mScene, mCentralWidget);
    mCanvas->setMouseTracking(true); // important
     mCentralgridWidget->addWidget(mCanvas,0,0);
+    //mCanvas = new QGraphicsView(mScene, mCentralWidget);
+    mCanvas = new CanvasView(mScene, mCentralWidget);
+    static_cast<CanvasView*>(mCanvas)->setSketcher(this);
+    mCentralgridWidget->addWidget(mCanvas, 0, 0);
     setCentralWidget(mCentralWidget);
     mCanvas->scale(1, -1);
     /*QVBoxLayout* layout = new QVBoxLayout(mCentralWidget);
@@ -58,22 +65,22 @@ void Sketcher::setupUI()
 
     // File Menu
     QMenu* fileMenu = menuBar()->addMenu("File");
-    QAction* newAction = fileMenu->addAction("New");
+    QAction* newAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_FileIcon), "New");
     newAction->setShortcut(QKeySequence::New);   // Ctrl+N
-    QAction* openAction = fileMenu->addAction("Open");
+    QAction* openAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DirOpenIcon), "Open");
     openAction->setShortcut(QKeySequence::Open);   // Ctrl+O
-    QAction* saveAction = fileMenu->addAction("Save");
+    QAction* saveAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogSaveButton), "Save");
     saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
 
 
     // Edit Menu
     QMenu* editMenu = menuBar()->addMenu("Edit");
-    QAction* cleanAction = editMenu->addAction("Clean");
+    QAction* cleanAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_TrashIcon), "Clean");
     cleanAction->setShortcut(Qt::CTRL | Qt::Key_X); // Ctrl+X
-    QAction* undoAction = editMenu->addAction("Undo");
+    QAction* undoAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_ArrowBack), "Undo");
     undoAction->setShortcut(QKeySequence::Undo);   // Ctrl+Z
-    QAction* redoAction = editMenu->addAction("Redo");
-    redoAction->setShortcut(Qt::ALT | Qt::Key_Z);   // Alt+Z
+    QAction* redoAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_ArrowForward), "Redo");
+    redoAction->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Z);   // Ctrl+Shift+Z
 
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
@@ -163,6 +170,8 @@ void Sketcher::setupUI()
    // connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
    //connect(mCanvas, &QGraphicsScene::mouseMoved, this, &Sketcher::mouseMoveEvent);
    //connect(mCanvas, SIGNAL(mouseMovedOnScene(QPointF)), this, SLOT(updateMousePosition(QPointF)));
+    connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
+    connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
@@ -198,7 +207,7 @@ void Sketcher::mouseMoveEvent(QMouseEvent* event)
 //    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
 //}
 
-void Sketcher::drawConnectedPoints(std::vector<Point> p)
+void Sketcher::drawConnectedPoints(std::vector<Point> p, Shape* shapes)
 {
     if (p.size() > 36)
     {
@@ -212,6 +221,8 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
     QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
     item->setPen(QPen(Qt::black, 2));
     mScene->addItem(item);
+    mShapes[mShapeId++].push_back(shapes);
+    mUndoRedo->recordAdd(item, shapes);
 }
 
 void Sketcher::drawAxesTool()
@@ -229,7 +240,7 @@ void Sketcher::drawAxesTool()
     Point px2(x2, y2);
     Line* xAxes = new Line(px1, px2);
     std::vector<Point> px = xAxes->getCoordinates();
-    drawConnectedPoints(px);
+    drawConnectedPoints(px, xAxes);
 	/*QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(xAxes);  
    itemX->setPen(QPen(Qt::blue, 1));
   mScene->addItem(itemX);*/
@@ -243,7 +254,7 @@ void Sketcher::drawAxesTool()
     Point py2(x4, y4);
     Line* yAxes = new Line(py1, py2);
     std::vector<Point> py = yAxes->getCoordinates();
-	drawConnectedPoints(py);
+	drawConnectedPoints(py, yAxes);
 	/*QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(yAxes);
 	itemY->setPen(QPen(Qt::blue, 1));
 	mScene->addItem(itemY);*/
@@ -260,6 +271,13 @@ void Sketcher::drawAxesTool()
 }
 
 // --- Slots for drawing ---
+void Sketcher::finishShape() {
+    if (mCurrentTool == ToolType::Polygon && tempPoints.size() >= 3) {
+        Polygons* poly = new Polygons(tempPoints);
+        drawConnectedPoints(poly->getCoordinates(), poly);
+    }
+    else if (mCurrentTool == ToolType::PolyLine && tempPoints.size() >= 2) {
+        PolyLine* pl = new PolyLine(tempPoints);
 
 void Sketcher::onPointToolClicked()
 {
@@ -275,68 +293,129 @@ void Sketcher::onPointToolClicked()
     mShapes[mShapeId++].push_back(p);
     mUndoRedo->recordData(mShapes);
 }
+        QPainterPath path;
+        path.moveTo(tempPoints[0].x, tempPoints[0].y);
+        for (size_t i = 1; i < tempPoints.size(); ++i) {
+            path.lineTo(tempPoints[i].x, tempPoints[i].y);
+        }
+
+        QGraphicsPathItem* item = new QGraphicsPathItem(path);
+        QPen pen(Qt::black, 2);
+        pen.setJoinStyle(Qt::RoundJoin);
+        pen.setCapStyle(Qt::RoundCap);
+        item->setPen(pen);
+        mScene->addItem(item);
+        mShapes[mShapeId++].push_back(pl);
+        mUndoRedo->recordAdd(item, pl);
+    }
+
+    tempPoints.clear();
+}
+
+void Sketcher::cancelShape() {
+    tempPoints.clear();
+}
+
+
+void Sketcher::handleCanvasClick(QPointF pos) {
+    Point p(pos.x(), pos.y());
+
+    switch (mCurrentTool) {
+    case ToolType::Point: {
+        QBrush brush(QColor("#3DB9E7"));
+        auto* item = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
+        item->setPen(QPen(Qt::transparent));
+        item->setBrush(brush);
+        mScene->addItem(item);
+        mShapes[mShapeId++].push_back(p);
+        mUndoRedo->recordAdd(item, p);
+        break;
+    }
+    case ToolType::Line:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 2) {
+            Line* l = new Line(tempPoints[0], tempPoints[1]);
+            auto coords = l->getCoordinates();
+            drawConnectedPoints(coords, l);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Triangle:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 3) {
+            Triangle* t = new Triangle(tempPoints[0], tempPoints[1], tempPoints[2]);
+            auto coords = t->getCoordinates();
+            drawConnectedPoints(coords, t);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Rectangle:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 2) {
+            Rectangles* r = new Rectangles(tempPoints[0], tempPoints[1]);
+            auto coords = r->getCoordinates();
+            drawConnectedPoints(coords, r);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Circle:
+        tempPoints.push_back(p);
+        if (tempPoints.size() == 2) {
+            Circle* c = new Circle(tempPoints[0], tempPoints[1]);
+            auto coords = c->getCoordinates();
+            drawConnectedPoints(coords, c);
+            tempPoints.clear();
+        }
+        break;
+
+    case ToolType::Polygon:
+    case ToolType::PolyLine:
+        // here you can collect multiple clicks until user presses "Enter" or right-clicks
+        tempPoints.push_back(p);
+        break;
+
+    default: break;
+    }
+}
+
+// --- Slots for drawing ---
+
+void Sketcher::onPointToolClicked()
+{
+    mCurrentTool = ToolType::Point;
+}
 
 void Sketcher::onLineToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Line* l = new Line(p1, p2);
-    std::vector<Point> p = l->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(l);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Line;
 }
 
 void Sketcher::onTriangleToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double x3 = QInputDialog::getDouble(this, "Triangle", "Enter X coordinate of 3rd Point:", 0, -10000, 10000, 2);
-    double y3 = QInputDialog::getDouble(this, "Triangle", "Enter Y coordinate of 3rd Point:", 1, -10000, 10000, 2);
-    Point a(x1, y1);
-    Point b(x2, y2);
-    Point c(x3, y3);
-    Triangle* t = new Triangle(a, b, c);
-    std::vector<Point> p = t->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(t);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Triangle;
 }
 
 void Sketcher::onRectangleToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Rectangle", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Rectangle", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    Point a(x1, y1);
-    Point c(x2, y2);
-    Rectangles* r = new Rectangles(a, c);
-    std::vector<Point> p = r->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(r);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Rectangle;
 }
 
 void Sketcher::onCircleToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of Center:", 0, -10000, 10000, 2);
-    double y1 = QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of Center:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Circle", "Enter X coordinate of a circumference Point:", 1, -10000, 10000, 2);
-    double y2 = QInputDialog::getDouble(this, "Circle", "Enter Y coordinate of a circumference Point:", 1, -10000, 10000, 2);
-    Point Center(x1, y1);
-    Point onCircle(x2, y2);
-    Circle* c = new Circle(Center, onCircle);
-    std::vector<Point> p = c->getCoordinates();
-    drawConnectedPoints(p);
-    mShapes[mShapeId++].push_back(c);
-    //mUndoRedo->recordData(mShapes);
+    mCurrentTool = ToolType::Circle;
+}
+
+void Sketcher::onPolygonToolClicked()
+{
+    mCurrentTool = ToolType::Polygon;
+}
+
+void Sketcher::onPolyLineToolClicked()
+{
+    mCurrentTool = ToolType::PolyLine;
 }
 
 void Sketcher::onNewActionTriggered()
@@ -360,11 +439,18 @@ void Sketcher::onNewActionTriggered()
         // if No → continue without saving
     }
 
-    // Open a new Sketcher window
-    Sketcher* newWindow = new Sketcher();
-    newWindow->show();
-    // Close current window
-    this->close();
+    mScene->clear();
+
+    // Delete logical shapes
+    for (auto& [id, vec] : mShapes) {
+        for (auto& item : vec) {
+            if (std::holds_alternative<Shape*>(item)) {
+                delete std::get<Shape*>(item);
+            }
+        }
+    }
+    mShapes.clear();
+    mShapeId = 0;
 }
 
 void Sketcher::onOpenActionTriggered()
@@ -396,7 +482,19 @@ void Sketcher::onOpenActionTriggered()
                 Shape* shape = std::get<Shape*>(item);
                 if (shape) {
                     std::vector<Point> p = shape->getCoordinates();
-                    newWindow->drawConnectedPoints(p);
+                    //newWindow->drawConnectedPoints(p, shape);
+                    if (p.size() > 36)
+                    {
+                        p.erase(p.begin());
+                        p.erase(p.begin());
+                    }
+                    QPolygonF shape;
+                    for (int i = 0; i < p.size(); i++) {
+                        shape << QPointF(p[i].x, p[i].y);
+                    }
+                    QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+                    item->setPen(QPen(Qt::black, 2));
+                    newWindow->mScene->addItem(item);
                 }
             }
             else if (std::holds_alternative<Point>(item)) {
@@ -435,27 +533,59 @@ void Sketcher::onCleanActionTriggered()
             "Are you sure you want to remove all shapes?",
             QMessageBox::Yes | QMessageBox::No
         );
-
         if (reply != QMessageBox::Yes)
             return;
     }
-    // record state before clean
-    //mUndoRedo->recordData(mShapes);
 
-    // Clear scene
-   // mScene->clear();
-
-    // Delete dynamically allocated shapes
+    // Collect all current items into a snapshot
+    std::vector<Action> snapshot;
     for (auto& [id, vec] : mShapes) {
         for (auto& item : vec) {
-            if (std::holds_alternative<Shape*>(item)) {
-                Shape* shape = std::get<Shape*>(item);
-                delete shape;
+            if (std::holds_alternative<Point>(item)) {
+                Point p = std::get<Point>(item);
+                QBrush brush(QColor("#3DB9E7"));
+                QGraphicsEllipseItem* ellipse = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
+                ellipse->setPen(QPen(Qt::transparent));
+                ellipse->setBrush(brush);
+                snapshot.push_back({ ActionType::AddItem, ellipse, p, {} });
+            }
+            else if (std::holds_alternative<Shape*>(item)) {
+                Shape* s = std::get<Shape*>(item);
+                if (s) {
+                    std::vector<Point> p = s->getCoordinates();
+                    if (p.size() > 36)
+                    {
+                        p.erase(p.begin());
+                        p.erase(p.begin());
+                    }
+                    QPolygonF shape;
+                    for (int i = 0; i < p.size(); i++) {
+                        shape << QPointF(p[i].x, p[i].y);
+                    }
+                    QGraphicsPolygonItem* poly = new QGraphicsPolygonItem(shape);
+                    poly->setPen(QPen(Qt::black, 2));
+                    snapshot.push_back({ ActionType::AddItem, poly, s, {} });
+                }
             }
         }
     }
 
-    // Clear internal data
+    // Record clear action
+    mUndoRedo->recordClear(snapshot);
+
+    // Clear scene
+   // mScene->clear();
+    // Now actually clear scene
+    mScene->clear();
+
+    // Delete logical shapes
+    for (auto& [id, vec] : mShapes) {
+        for (auto& item : vec) {
+            if (std::holds_alternative<Shape*>(item)) {
+                delete std::get<Shape*>(item);
+            }
+        }
+    }
     mShapes.clear();
     mShapeId = 0;
 }
@@ -463,7 +593,17 @@ void Sketcher::onCleanActionTriggered()
 //void Sketcher::onUndoActionTriggered() {
 //    mUndoRedo->undo(mScene, mShapes);
 //}
+void Sketcher::onUndoActionTriggered() {
+    if (mUndoRedo->canUndo()) {
+        mUndoRedo->undo(mScene);
+    }
+}
 
 //void Sketcher::onRedoActionTriggered() {
 //    mUndoRedo->redo(mScene, mShapes);
 //}
+void Sketcher::onRedoActionTriggered() {
+    if (mUndoRedo->canRedo()) {
+        mUndoRedo->redo(mScene);
+    }
+}
