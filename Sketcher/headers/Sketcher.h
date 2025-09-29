@@ -4,6 +4,9 @@
 #include <vector>
 #include <unordered_map>
 #include <variant>
+#include <QStatusBar>
+#include <QLabel>
+#include <QMouseEvent>
 #include "Point.h"
 #include "Shape.h"
 #include <QGraphicsView>

@@ -22,7 +22,7 @@ Sketcher::Sketcher(QWidget* parent)
     setupUI();
     resize(800, 600);
     drawAxesTool();
-  
+	mouseMoveEvent(nullptr);
 
 }
 
@@ -136,7 +136,7 @@ void Sketcher::setupUI()
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
    // connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
-  //  connect(mCanvas, &QWidget::mouseMoveEvent, this, &Sketcher::mouseMoveEvent);
+  // connect(mCanvas, &QWidget::mouseMoveEvent, this, &Sketcher::mouseMoveEvent);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
@@ -147,17 +147,7 @@ void Sketcher::setupUI()
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
 
-void Sketcher::mouseMoveEvent(QMouseEvent* event)
-{
-    posLabel->setText(QString("X: %1, Y: %2")
-        .arg(event->position().x(), 0, 'f', 1)  // 1 decimal place
-		.arg(event->position().y(), 0, 'f', 1));
-    //posLabel->setText(QString("X: %1, Y: %2")
-    //     .arg(pos.x(), 0, 'f', 1)  // 1 decimal place
-    //          .arg(pos.y(), 0, 'f', 1));
-	
-    
-}
+
 
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
@@ -178,8 +168,11 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
 
 void Sketcher::drawAxesTool()
 {
-	int width = this->frameSize().width();
-	int height = this->frameSize().height();
+	//int width = this->size().width();
+	//int height = this->size().height();
+
+    int width = 1500;
+    int height = 1200;
 	double x1 = -width ;
 	double y1 = 0;
 	double x2 = width;
