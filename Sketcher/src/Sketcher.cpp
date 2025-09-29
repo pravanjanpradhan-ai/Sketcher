@@ -41,7 +41,7 @@ void Sketcher::setupUI()
    mCanvas->setMouseTracking(true); // important
     mCentralgridWidget->addWidget(mCanvas,0,0);
     setCentralWidget(mCentralWidget);
-
+    mCanvas->scale(1, -1);
     /*QVBoxLayout* layout = new QVBoxLayout(mCentralWidget);
     layout->addWidget(mCanvas);*/
    
@@ -164,7 +164,7 @@ void Sketcher::setupUI()
    //connect(mCanvas, &QGraphicsScene::mouseMoved, this, &Sketcher::mouseMoveEvent);
    //connect(mCanvas, SIGNAL(mouseMovedOnScene(QPointF)), this, SLOT(updateMousePosition(QPointF)));
 
-    connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
+    connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
     
