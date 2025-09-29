@@ -27,8 +27,11 @@ public:
     void drawConnectedPoints(std::vector<Point> p);
     void drawAxesTool();
 
-    void mouseMoveEvent(QMouseEvent* event) override;  // handle mouse movement
-
+    //protected:
+    //void mouseMoveEvent(QMouseEvent* event) override;  // handle mouse movement
+//
+//signals:
+//    void mouseMoved(const QPointF& pos);   // signal to send scene coordinates
 
 private:
     void setupUI();
@@ -43,6 +46,7 @@ private:
     QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
+	QStatusBar* mStatusBar;
 	QLabel* mStatusLabel;
     QLabel* posLabel;   // Label to display mouse position
 

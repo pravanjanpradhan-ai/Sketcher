@@ -22,7 +22,9 @@ Sketcher::Sketcher(QWidget* parent)
     setupUI();
     resize(800, 600);
     drawAxesTool();
-	mouseMoveEvent(nullptr);
+	/*mouseMoveEvent(nullptr);
+    setMouseTracking(true);*/
+   // mouseMoveEvent(QMouseEvent * event);
 
 }
 
@@ -40,6 +42,8 @@ void Sketcher::setupUI()
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
     setCentralWidget(mCentralWidget);
 
+   
+   
     // File Menu
     QMenu* fileMenu = menuBar()->addMenu("File");
     QAction* newAction = fileMenu->addAction("New");
@@ -62,6 +66,7 @@ void Sketcher::setupUI()
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
 
+	
     // Point Tool
     mPointTool = new QToolButton(mToolBar);
     mPointTool->setIcon(QIcon(":/Sketcher/Point.png"));
@@ -118,14 +123,19 @@ void Sketcher::setupUI()
     mAxesTool->setToolTip("PolyLine");
     mToolBar->addWidget(mAxesTool);
 
-    statusBar()->showMessage("Application Started");
 
+    mStatusBar = new QStatusBar(this);
+    setStatusBar(mStatusBar);
+
+    mStatusBar->showMessage("Application Started");
     // status bar label
+	posLabel = new QLabel(this);
+
     posLabel = new QLabel("X: 0, Y: 0", this);
-    statusBar()->addPermanentWidget(posLabel);
+    mStatusBar->addPermanentWidget(posLabel);
     // Add a permanent widget (label)
     mStatusLabel = new QLabel("Ready", this);
-    statusBar()->addPermanentWidget(mStatusLabel);
+    mStatusBar->addPermanentWidget(mStatusLabel);
 
   
 
@@ -136,12 +146,12 @@ void Sketcher::setupUI()
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
    // connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
-  // connect(mCanvas, &QWidget::mouseMoveEvent, this, &Sketcher::mouseMoveEvent);
+  //connect(mCanvas, &QGraphicsScene::mouseMoved, this, &Sketcher::mouseMoveEvent);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
-
+    
     connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
     connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
