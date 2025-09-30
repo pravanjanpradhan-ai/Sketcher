@@ -14,8 +14,8 @@ public:
     void setSketcher(Sketcher* s);
 
 protected:
-    void mousePressEvent(QMouseEvent* event) override;
-    void keyPressEvent(QKeyEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override; // Rituraj - Takes  mouse click position for coordinates
+	void keyPressEvent(QKeyEvent* event) override; // for enter - polygon/polyline finish, esc - cancel shape
 
 private:
     Sketcher* mSketcher;

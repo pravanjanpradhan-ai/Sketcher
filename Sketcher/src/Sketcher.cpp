@@ -21,6 +21,9 @@ Sketcher::Sketcher(QWidget* parent)
 {
     setupUI();
     resize(800, 600);
+    drawAxesTool();
+    //mouseMoveEvent();
+
 }
 
 Sketcher::~Sketcher() {}
@@ -33,12 +36,24 @@ void Sketcher::setupUI()
 
     // Scene + Canvas
     mScene = new QGraphicsScene(this);
+   mCanvas = new QGraphicsView(mScene, mCentralWidget);
+   mCanvas->setMouseTracking(true); // important
+    mCentralgridWidget->addWidget(mCanvas,0,0);
     //mCanvas = new QGraphicsView(mScene, mCentralWidget);
     mCanvas = new CanvasView(mScene, mCentralWidget);
     static_cast<CanvasView*>(mCanvas)->setSketcher(this);
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
     setCentralWidget(mCentralWidget);
     mCanvas->scale(1, -1);
+
+
+     //Add a grid for reference
+    int width = 2000;
+    int height = 2000;
+    for (int x = -width; x <= width; x += 50)
+        mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
+    for (int y = -height; y <= height; y += 50)
+        mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
 
     // File Menu
     QMenu* fileMenu = menuBar()->addMenu("File");
@@ -68,7 +83,7 @@ void Sketcher::setupUI()
     mPointTool->setIconSize(QSize(32, 32));
     mPointTool->setToolTip("Point");
     mToolBar->addWidget(mPointTool);
-
+    
     // Line Tool
     mLineTool = new QToolButton(mToolBar);
     mLineTool->setIcon(QIcon(":/Sketcher/Line.png"));
@@ -111,10 +126,31 @@ void Sketcher::setupUI()
     mPolyLineTool->setToolTip("PolyLine");
     mToolBar->addWidget(mPolyLineTool);
 
-    // Text
-    //QToolButton* Text_btn = new QToolButton(mToolBar);
-    //Text_btn->setText("Text");
-    //mToolBar->addWidget(Text_btn);
+    // Axes Tool
+    mAxesTool = new QToolButton(mToolBar);
+    mAxesTool->setIcon(QIcon(":/Sketcher/PolyLine.png"));
+    mAxesTool->setIconSize(QSize(32, 32));
+    mAxesTool->setToolTip("Axis");
+    mToolBar->addWidget(mAxesTool);
+
+
+
+    setMouseTracking(true);
+    //if (mCentralWidget)
+    mCentralWidget->setMouseTracking(true);
+
+    // Status Bar
+    mStatusBar = new QStatusBar(this);
+    setStatusBar(mStatusBar);
+   posLabel = new QLabel(this);
+    //posLabel = new QLabel("X: 0, Y: 0", this);
+    mStatusBar->showMessage("Application Started");
+    // status bar label for mouse position
+    mStatusBar->addPermanentWidget(posLabel);
+    // Add a permanent widget (label)
+    mStatusLabel = new QLabel("Ready", this);
+    mStatusBar->addPermanentWidget(mStatusLabel);
+
 
     // Connections
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
@@ -125,14 +161,43 @@ void Sketcher::setupUI()
     connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
     connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
 
-    connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered);
+    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
+
+    connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
     connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
-
+    
     connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
     connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
+
+
+void Sketcher::mouseMoveEvent(QMouseEvent* event)
+{
+    // Check if mouse is over the canvas
+    QPoint viewPos = mCanvas->mapFromParent(event->pos());
+    if (mCanvas->rect().contains(viewPos)) {
+        // Map to scene coordinates
+        QPointF scenePos = mCanvas->mapToScene(viewPos);
+        int x = event->pos().x();
+        int y = event->pos().y();
+       /* int x = static_cast<int>(scenePos.x());
+        int y = static_cast<int>(scenePos.y());*/
+        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+    }
+    else {
+        mStatusLabel->setText("X: -, Y: -");
+    }
+
+    QMainWindow::mouseMoveEvent(event);
+}
+//void Sketcher::mouseMoveEvent(QMouseEvent* event)
+//{
+//    int x = event->pos().x();
+//    int y = event->pos().y();
+//    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+//}
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
@@ -150,6 +215,58 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
     mScene->addItem(item);
 }
 
+void Sketcher::drawAxesTool()
+{
+	//int width = this->size().width();
+	//int height = this->size().height();
+
+    int width = 2000;
+    int height = 2000;
+	double x1 = -width ;
+	double y1 = 0;
+	double x2 = width;
+	double y2 = 0;
+    Point px1(x1, y1);
+    Point px2(x2, y2);
+    Line* xAxes = new Line(px1, px2);
+    std::vector<Point> px = xAxes->getCoordinates();
+    QPolygonF shapeX;
+    for (int i = 0; i < px.size(); i++) {
+        shapeX << QPointF(px[i].x, px[i].y);
+    }
+    QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(shapeX);
+    itemX->setPen(QPen(Qt::blue, 1));
+    mScene->addItem(itemX);
+
+
+	double x3 = 0;
+	double y3 = -height;
+	double x4 = 0;
+    double y4 = height;
+    Point py1(x3, y3);
+    Point py2(x4, y4);
+    Line* yAxes = new Line(py1, py2);
+    std::vector<Point> py = yAxes->getCoordinates();
+    QPolygonF shapeY;
+    for (int i = 0; i < py.size(); i++) {
+        shapeY << QPointF(py[i].x, py[i].y);
+    }
+	QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(shapeY);
+	itemY->setPen(QPen(Qt::blue, 1));
+	mScene->addItem(itemY);
+
+
+    // Draw origin point
+    Point origin(0, 0);
+    QBrush brush(QColor("#FF0000"));
+    QGraphicsEllipseItem* itemOrigin = new QGraphicsEllipseItem(origin.x - 2, origin.y - 2, 4, 4);
+    itemOrigin->setPen(QPen(Qt::transparent));   // border color
+    itemOrigin->setBrush(brush);
+    mScene->addItem(itemOrigin);
+
+}
+
+// --- Slots for drawing ---
 void Sketcher::finishShape() {
     if (mCurrentTool == ToolType::Polygon && tempPoints.size() >= 3) {
         Polygons* poly = new Polygons(tempPoints);
