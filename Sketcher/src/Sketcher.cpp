@@ -46,15 +46,7 @@ void Sketcher::setupUI()
 
     setCentralWidget(mCentralWidget);
     mCanvas->scale(1, -1);
-
-
-     //Add a grid for reference
-    int width = 2000;
-    int height = 2000;
-    for (int x = -width; x <= width; x += 50)
-        mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
-    for (int y = -height; y <= height; y += 50)
-        mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
+    
 	mMenuBar = new QMenuBar(this);
 	setMenuBar(mMenuBar);
     // File Menu
@@ -130,7 +122,7 @@ void Sketcher::setupUI()
 
     // Axes Tool
     mAxesTool = new QToolButton(mToolBar);
-    mAxesTool->setIcon(QIcon(":/Sketcher/PolyLine.png"));
+    mAxesTool->setIcon(QIcon(":/Sketcher/axis.jpg"));
     mAxesTool->setIconSize(QSize(32, 32));
     mAxesTool->setToolTip("Axis");
     mToolBar->addWidget(mAxesTool);
@@ -202,6 +194,7 @@ void Sketcher::mouseMoveEvent(QMouseEvent* event)
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
+
     if (p.size() > 36)
     {
         p.erase(p.begin());
@@ -218,11 +211,17 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
 
 void Sketcher::drawAxesTool()
 {
-	//int width = this->size().width();
-	//int height = this->size().height();
-
-    int width = 2000;
-    int height = 2000;
+    //Add a grid for reference
+    int width = 20000;
+    int height = 20000;
+    for (int x = -width; x <= width; x += 50)
+        mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
+    for (int y = -height; y <= height; y += 50)
+        mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
+	
+	// Axes lines
+    /*int width = 20000;
+    int height = 20000;*/
 	double x1 = -width ;
 	double y1 = 0;
 	double x2 = width;
@@ -239,7 +238,6 @@ void Sketcher::drawAxesTool()
     itemX->setPen(QPen(Qt::blue, 1));
     mScene->addItem(itemX);
 
-
 	double x3 = 0;
 	double y3 = -height;
 	double x4 = 0;
@@ -255,7 +253,6 @@ void Sketcher::drawAxesTool()
 	QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(shapeY);
 	itemY->setPen(QPen(Qt::blue, 1));
 	mScene->addItem(itemY);
-
 
     // Draw origin point
     Point origin(0, 0);
