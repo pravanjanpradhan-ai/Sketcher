@@ -14,7 +14,8 @@
 #include "UndoRedo.h"
 #include "CanvasView.h"
 
-using SketchData = std::variant<Shape*, Point>;
+using SketchData = std::variant<Shape* ,Point>;
+
 class Sketcher : public QMainWindow
 {
     Q_OBJECT
@@ -29,12 +30,14 @@ public:
 
 private:
     void setupUI();
+
     std::unordered_map<int, std::vector<SketchData>> mShapes;
     int mShapeId = 0;
     bool isSave = false;
     UndoRedoManager* mUndoRedo = new UndoRedoManager();
     enum class ToolType { None, Point, Line, Triangle, Rectangle, Circle, Polygon, PolyLine };
     ToolType mCurrentTool = ToolType::None;
+
 
 private:
     QWidget* mCentralWidget;
