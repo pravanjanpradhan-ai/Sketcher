@@ -36,13 +36,14 @@ void Sketcher::setupUI()
 
     // Scene + Canvas
     mScene = new QGraphicsScene(this);
-   mCanvas = new QGraphicsView(mScene, mCentralWidget);
-   mCanvas->setMouseTracking(true); // important
+    mCanvas = new QGraphicsView(mScene, mCentralWidget);
+    mCanvas->setMouseTracking(true); // important
     mCentralgridWidget->addWidget(mCanvas,0,0);
-    //mCanvas = new QGraphicsView(mScene, mCentralWidget);
+	//Mouse click
     mCanvas = new CanvasView(mScene, mCentralWidget);
     static_cast<CanvasView*>(mCanvas)->setSketcher(this);
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
+
     setCentralWidget(mCentralWidget);
     mCanvas->scale(1, -1);
 
@@ -54,24 +55,25 @@ void Sketcher::setupUI()
         mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
     for (int y = -height; y <= height; y += 50)
         mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
-
+	mMenuBar = new QMenuBar(this);
+	setMenuBar(mMenuBar);
     // File Menu
-    QMenu* fileMenu = menuBar()->addMenu("File");
-    QAction* newAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_FileIcon), "New");
+    QMenu* fileMenu = mMenuBar->addMenu("File");
+    QAction* newAction = fileMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_FileIcon), "New");
     newAction->setShortcut(QKeySequence::New);   // Ctrl+N
-    QAction* openAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DirOpenIcon), "Open");
+    QAction* openAction = fileMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_DirOpenIcon), "Open");
     openAction->setShortcut(QKeySequence::Open);   // Ctrl+O
-    QAction* saveAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogSaveButton), "Save");
+    QAction* saveAction = fileMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_DialogSaveButton), "Save");
     saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
 
 
     // Edit Menu
-    QMenu* editMenu = menuBar()->addMenu("Edit");
-    QAction* cleanAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_TrashIcon), "Clean");
+    QMenu* editMenu = mMenuBar->addMenu("Edit");
+    QAction* cleanAction = editMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_TrashIcon), "Clean");
     cleanAction->setShortcut(Qt::CTRL | Qt::Key_X); // Ctrl+X
-    QAction* undoAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_ArrowBack), "Undo");
+    QAction* undoAction = editMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_ArrowBack), "Undo");
     undoAction->setShortcut(QKeySequence::Undo);   // Ctrl+Z
-    QAction* redoAction = editMenu->addAction(this->style()->standardIcon(QStyle::SP_ArrowForward), "Redo");
+    QAction* redoAction = editMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_ArrowForward), "Redo");
     redoAction->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Z);   // Ctrl+Shift+Z
 
     mToolBar = new QToolBar(this);
@@ -142,7 +144,7 @@ void Sketcher::setupUI()
     // Status Bar
     mStatusBar = new QStatusBar(this);
     setStatusBar(mStatusBar);
-   posLabel = new QLabel(this);
+    posLabel = new QLabel(this);
     //posLabel = new QLabel("X: 0, Y: 0", this);
     mStatusBar->showMessage("Application Started");
     // status bar label for mouse position
@@ -150,7 +152,6 @@ void Sketcher::setupUI()
     // Add a permanent widget (label)
     mStatusLabel = new QLabel("Ready", this);
     mStatusBar->addPermanentWidget(mStatusLabel);
-
 
     // Connections
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
