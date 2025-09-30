@@ -60,8 +60,5 @@ private slots:
 	void onOpenFile();
 	void onSaveFile();
 	void onSaveAsFile();
-	
-    
-
-    
+   
 };

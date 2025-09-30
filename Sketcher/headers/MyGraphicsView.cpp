@@ -8,18 +8,19 @@ MyGraphicsView::MyGraphicsView(QWidget* parent)
 	// Added such that shapes are not blurry when zoomed.
 	setDragMode(QGraphicsView::NoDrag);
 	// NODrag to implement custom panning we can use middle mouse button, ScrollHandDrag can be used for pannng with left mouse button
+	// There are some other options as well like.
 	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 	// Zoom around mouse cursor
 	setResizeAnchor(QGraphicsView::AnchorUnderMouse);
 }
 void MyGraphicsView::wheelEvent(QWheelEvent* event) {
-	// simple step zoom
+	// simple step zoom with mouse wheel
 	const double factor = 1.15;
 	if (event->angleDelta().y() > 0) {
-		scale(factor, factor); // zoom in
+		scale(factor, factor); // zoom in (when wheel is scrolled up and it is taken as +ve) 
 	}
 	else {
-		scale(1.0 / factor, 1.0 / factor); // zoom out
+		scale(1.0 / factor, 1.0 / factor); // zoom out (when wheel is scrolled up and it is taken as -ve)
 	}
 }
 void MyGraphicsView::mousePressEvent(QMouseEvent* event) {
