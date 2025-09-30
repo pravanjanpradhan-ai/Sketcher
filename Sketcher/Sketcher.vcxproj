@@ -123,6 +123,7 @@
     <QtRcc Include="Sketcher.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="headers\MyGraphicsView.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Sketcher.cpp" />
     <ClCompile Include="src\stdafx.cpp">
@@ -134,6 +135,7 @@
     <QtMoc Include="headers\Sketcher.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="headers\MyGraphicsView.h" />
     <ClInclude Include="headers\stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

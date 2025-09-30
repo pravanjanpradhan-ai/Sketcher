@@ -43,6 +43,8 @@ public:
 	QMenu* mFileMenu;
 	QMenuBar* mMenuBar;
 	QMenu* mEditMenu;
+    QAction* newAction;
+    QAction* saveAction;
     void drawConnectedPoints(std::vector<Point>& points);
 	QGraphicsView* mGraphicsView;
     QGraphicsScene* mScene;

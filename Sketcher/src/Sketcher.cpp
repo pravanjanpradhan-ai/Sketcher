@@ -9,6 +9,7 @@
 #include "Circle.h"
 #include "Rectangle.h"
 #include "Triangle.h"
+#include"MyGraphicsView.h"
 
 
 Sketcher::Sketcher(QWidget* parent)
@@ -133,71 +134,6 @@ void Sketcher::onSaveAsFile()
 
 }
 
-// Simple view with pan (middle mouse) and wheel zoom
-class MyGraphicsView : public QGraphicsView {
-public:
-    MyGraphicsView(QWidget* parent = nullptr) : QGraphicsView(parent) {
-        setRenderHint(QPainter::Antialiasing);
-		// Added such that shapes are not blurry when zoomed.
-        setDragMode(QGraphicsView::NoDrag); 
-		// NODrag to implement custom panning we can use middle mouse button, ScrollHandDrag can be used for pannng with left mouse button
-        setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        // Zoom around mouse cursor
-        setResizeAnchor(QGraphicsView::AnchorUnderMouse);
-    }
-
-protected:
-    void wheelEvent(QWheelEvent* event) override {
-        // simple step zoom
-        const double factor = 1.15;
-        if (event->angleDelta().y() > 0) {
-            scale(factor, factor); // zoom in
-        }
-        else {
-            scale(1.0 / factor, 1.0 / factor); // zoom out
-        }
-    }
-
-    void mousePressEvent(QMouseEvent* event) override {
-        if (event->button() == Qt::MiddleButton) {
-            m_panning = true;
-            m_lastPanPoint = event->pos();
-            setCursor(Qt::ClosedHandCursor);
-            event->accept();
-            return;
-        }
-        QGraphicsView::mousePressEvent(event);
-    }
-
-    void mouseMoveEvent(QMouseEvent* event) override {
-        if (m_panning) {
-            // Move the view by the delta in view coordinates
-            QPoint delta = event->pos() - m_lastPanPoint;
-            m_lastPanPoint = event->pos();
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
-            verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
-            event->accept();
-            return;
-        }
-        QGraphicsView::mouseMoveEvent(event);
-    }
-
-    void mouseReleaseEvent(QMouseEvent* event) override {
-        if (event->button() == Qt::MiddleButton && m_panning) {
-            m_panning = false;
-            setCursor(Qt::ArrowCursor);
-            event->accept();
-            return;
-        }
-        QGraphicsView::mouseReleaseEvent(event);
-    }
-
-private:
-    bool m_panning = false;
-    QPoint m_lastPanPoint;
-};
-
-
 void Sketcher::setupUI() {
     mCentralWidget = new QWidget(this);
     setCentralWidget(mCentralWidget);
@@ -257,42 +193,43 @@ void Sketcher::setupUI() {
 	mMenuBar = new QMenuBar(this);
 	setMenuBar(mMenuBar);
 
-	mFileMenu = new QMenu("File", this);
+	mFileMenu = new QMenu("File", mMenuBar);
 	mMenuBar->addMenu(mFileMenu);
 
-	QAction* newAction = new QAction("New", this);
+	newAction = new QAction("New", mFileMenu);
     mFileMenu->addAction(newAction);
     newAction->setShortcut(QKeySequence::New);   // Ctrl+N
     newAction->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
 
-	QAction* saveAction = new QAction("Save", this);
+	saveAction = new QAction("Save", mFileMenu);
 	mFileMenu->addAction(saveAction);
     saveAction->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
     saveAction->setShortcut(QKeySequence::Save);
 
-	QAction* saveAsAction = new QAction("Save As", this);
+	QAction* saveAsAction = new QAction("Save As", mFileMenu);
 	mFileMenu->addAction(saveAsAction);
     saveAsAction->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
     saveAsAction->setShortcut(QKeySequence::SaveAs);
 
-	QAction* openAction = new QAction("Open", this);  
+	QAction* openAction = new QAction("Open", mFileMenu);
 	mFileMenu->addAction(openAction);
     openAction->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton));
     openAction->setShortcut(QKeySequence::Open);
 
-	mEditMenu = new QMenu("Edit", this);
+	mEditMenu = new QMenu("Edit", mMenuBar);
+
 	mMenuBar->addMenu(mEditMenu);
-	QAction* undoAction = new QAction("Undo", this);
+	QAction* undoAction = new QAction("Undo", mEditMenu);
     undoAction->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));
 	mEditMenu->addAction(undoAction);
     undoAction->setShortcut(QKeySequence::Undo);
 
-	QAction* redoAction = new QAction("Redo", this);
+	QAction* redoAction = new QAction("Redo", mEditMenu);
 	mEditMenu->addAction(redoAction);
     redoAction->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
     redoAction->setShortcut(QKeySequence::Redo);
 
-	QAction* clearAction = new QAction("Clear", this);
+	QAction* clearAction = new QAction("Clear", mEditMenu);
 	mEditMenu->addAction(clearAction);
     clearAction->setIcon(style()->standardIcon(QStyle::SP_TrashIcon));
     clearAction->setShortcut(QKeySequence::Cut);
