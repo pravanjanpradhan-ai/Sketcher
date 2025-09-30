@@ -123,7 +123,6 @@
     <QtRcc Include="Sketcher.qrc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="headers\MyGraphicsView.cpp" />
     <ClCompile Include="src\CanvasView.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Sketcher.cpp" />
@@ -138,7 +137,6 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="headers\CanvasView.h" />
-    <QtMoc Include="headers\MyGraphicsView.h" />
     <ClInclude Include="headers\stdafx.h" />
     <ClInclude Include="headers\UndoRedo.h" />
   </ItemGroup>

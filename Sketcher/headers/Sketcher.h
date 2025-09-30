@@ -50,6 +50,7 @@ private:
     QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
+	QMenuBar* mMenuBar;
 	QStatusBar* mStatusBar;
 	QLabel* mStatusLabel;
     QLabel* posLabel;   // Label to display mouse position

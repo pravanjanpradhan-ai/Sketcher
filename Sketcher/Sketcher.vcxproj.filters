@@ -43,15 +43,9 @@
     <ClCompile Include="src\UndoRedo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="headers\MyGraphicsView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="headers\Sketcher.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="headers\MyGraphicsView.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="headers\CanvasView.h">
