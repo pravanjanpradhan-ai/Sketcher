@@ -36,12 +36,12 @@ bool FileWrite::write(const std::string& filename, const std::unordered_map<int,
 
                     const std::vector<Point>& coords = shape->getCoordinates();
                     if (coords.size() > 36) {
-                        fout << "(" << coords[0].x << " " << coords[0].y << ") ";
-                        fout << "(" << coords[1].x << " " << coords[1].y << ") \n";
+                        fout << coords[0].x << " " << coords[0].y << ",";
+                        fout << coords[1].x << " " << coords[1].y << "\n";
                     }
                     else{
                         for (const auto& pt : coords) {
-                            fout << "(" << pt.x << " " << pt.y << ") ";
+                            fout << pt.x << " " << pt.y << ",";
                         }
                         fout << "\n";
                     }
@@ -53,7 +53,7 @@ bool FileWrite::write(const std::string& filename, const std::unordered_map<int,
                     fout << "Point:\n";
                     headerPrinted = true;
                 }
-                fout << "(" << pt.x << " " << pt.y << ")\n";
+                fout << pt.x << " " << pt.y << "\n";
             }
         }
     }
@@ -73,61 +73,57 @@ bool FileWrite::read(const std::string& filename, std::unordered_map<int, std::v
     std::string currentShape;
 
     while (std::getline(fin, line)) {
-        if (line.empty()) continue; // skip blank lines
+        if (line.empty()) continue;
 
-        // If line ends with ":", it’s a new shape section
+        // If line ends with ":", it's a new shape section
         if (line.back() == ':') {
             currentShape = line.substr(0, line.size() - 1);
             continue;
         }
 
+        // Split line into coordinate tokens separated by commas
         std::stringstream ss(line);
+        std::string comma;
+        std::vector<Point> coords;
 
-        // ----- Point section -----
-        if (currentShape == "Point") {
+        while (std::getline(ss, comma, ',')) {
+            if (comma.empty()) continue;
+            std::stringstream pair(comma);
             double x, y;
-            char ch; // to skip '(' , ')' , spaces
-            if (ss >> ch >> x >> y >> ch) {
-                shapes[1].push_back(Point(x, y));
-            }
-        }
-        else {
-            // ----- Other Shape section -----
-            std::vector<Point> coords;
-            double x, y;
-            char ch;
-
-            // Parse all coordinate pairs in this line
-            while (ss >> ch >> x >> y >> ch) {
+            if (pair >> x >> y) {
                 coords.emplace_back(x, y);
             }
+        }
 
-            if (!coords.empty()) {
-                if (currentShape == "Line") {
-                    Shape* l = new Line(coords[0], coords[1]);
-                    shapes[2].push_back(l);
-                }
-                else if (currentShape == "Triangle") {
-                    Shape* t = new Triangle(coords[0], coords[1], coords[2]);
-                    shapes[3].push_back(t);
-                }
-                else if (currentShape == "Rectangle") {
-                    Shape* r = new Rectangles(coords[0], coords[2]);
-                    shapes[4].push_back(r);
-                }
-                else if (currentShape == "Circle") {
-                    Shape* c = new Circle(coords[0], coords[1]);
-                    shapes[5].push_back(c);
-                }
-                else if (currentShape == "Polygon") {
-                    Shape* poly = new Polygons(coords);
-                    shapes[6].push_back(poly);
-                }
-                else if (currentShape == "PolyLine") {
-                    Shape* pl = new PolyLine(coords);
-                    shapes[6].push_back(pl);
-                }
-            }
+        if (coords.empty()) continue;
+
+        if (currentShape == "Point") {
+            Point p(coords[0].x, coords[0].y);
+            shapes[1].push_back(p);
+        }
+        else if (currentShape == "Line") {
+            Shape* l = new Line(coords[0], coords[1]);
+            shapes[2].push_back(l);
+        }
+        else if (currentShape == "Triangle") {
+            Shape* t = new Triangle(coords[0], coords[1], coords[2]);
+            shapes[3].push_back(t);
+        }
+        else if (currentShape == "Rectangle") {
+            Shape* r = new Rectangles(coords[0], coords[2]);
+            shapes[4].push_back(r);
+        }
+        else if (currentShape == "Circle") {
+            Shape* c = new Circle(coords[0], coords[1]);
+            shapes[5].push_back(c);
+        }
+        else if (currentShape == "Polygon") {
+            Shape* poly = new Polygons(coords);
+            shapes[6].push_back(poly);
+        }
+        else if (currentShape == "PolyLine") {
+            Shape* pl = new PolyLine(coords);
+            shapes[7].push_back(pl);
         }
     }
 
