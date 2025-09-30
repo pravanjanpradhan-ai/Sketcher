@@ -134,7 +134,7 @@ void Sketcher::setupUI()
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
 
-/*void Sketcher::drawConnectedPoints(std::vector<Point> p, Shape* shapes)
+void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
     if (p.size() > 36)
     {
@@ -148,9 +148,7 @@ void Sketcher::setupUI()
     QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
     item->setPen(QPen(Qt::black, 2));
     mScene->addItem(item);
-    mShapes[mShapeId++].push_back(shapes);
-    mUndoRedo->recordAdd(item, shapes);
-}*/
+}
 
 void Sketcher::finishShape() {
     if (mCurrentTool == ToolType::Polygon && tempPoints.size() >= 3) {
@@ -367,51 +365,47 @@ void Sketcher::onNewActionTriggered()
 void Sketcher::onOpenActionTriggered()
 {
     QString mfilename = QFileDialog::getOpenFileName(
-        this, "Open Shapes", "", "Text Files (*.txt)");
+        this, "Open Shapes", "", "Sketcher Files (*.skt)");
 
     if (mfilename.isEmpty())
         return;
 
     std::string filename = mfilename.toStdString();
 
-    // Create a new Sketcher window
-    Sketcher* newWindow = new Sketcher();
-    newWindow->show();
-
-    // Load shapes into new window
     FileWrite input;
-    if (!input.read(filename, newWindow->mShapes)) {
+    if (!input.read(filename, mShapes)) {
         QMessageBox::warning(this, "Error", "Failed to open file!");
-        newWindow->close();
         return;
     }
 
     // Draw loaded shapes into new window's scene
-    for (const auto& pair : newWindow->mShapes) {
+    for (const auto& pair : mShapes) {
         for (const auto& item : pair.second) {
             if (std::holds_alternative<Shape*>(item)) {
                 Shape* shape = std::get<Shape*>(item);
                 if (shape) {
                     std::vector<Point> p = shape->getCoordinates();
-                    //newWindow->drawConnectedPoints(p, shape);
-                    if (p.size() > 36)
-                    {
-                        p.erase(p.begin());
-                        p.erase(p.begin());
+                    if (shape->getName() == "PolyLine") {
+                        QPainterPath path;
+                        path.moveTo(p[0].x, p[0].y);
+                        for (size_t i = 1; i < p.size(); ++i) {
+                            path.lineTo(p[i].x, p[i].y);
+                        }
+
+                        QGraphicsPathItem* item = new QGraphicsPathItem(path);
+                        QPen pen(Qt::black, 2);
+                        pen.setJoinStyle(Qt::RoundJoin);
+                        pen.setCapStyle(Qt::RoundCap);
+                        item->setPen(pen);
+                        mScene->addItem(item);
                     }
-                    QPolygonF shape;
-                    for (int i = 0; i < p.size(); i++) {
-                        shape << QPointF(p[i].x, p[i].y);
-                    }
-                    QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
-                    item->setPen(QPen(Qt::black, 2));
-                    newWindow->mScene->addItem(item);
+                    else drawConnectedPoints(p);
                 }
             }
             else if (std::holds_alternative<Point>(item)) {
                 Point pt = std::get<Point>(item);
                 QBrush brush(QColor("#3DB9E7"));
-                newWindow->mScene->addEllipse(pt.x - 2, pt.y - 2, 4, 4,
+                mScene->addEllipse(pt.x - 2, pt.y - 2, 4, 4,
                     QPen(Qt::transparent), brush);
             }
         }

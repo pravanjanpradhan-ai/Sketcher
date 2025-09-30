@@ -22,7 +22,7 @@ class Sketcher : public QMainWindow
 public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
-    //void drawConnectedPoints(std::vector<Point> p, Shape* shapes);
+    void drawConnectedPoints(std::vector<Point> p);
     void handleCanvasClick(QPointF pos);
     void finishShape();
     void cancelShape();
