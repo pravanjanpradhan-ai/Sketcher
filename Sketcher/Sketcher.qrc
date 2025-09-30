@@ -7,5 +7,6 @@
         <file>Rectangle.png</file>
         <file>Triangle.png</file>
         <file>PolyLine.png</file>
+        <file>axis.jpg</file>
     </qresource>
 </RCC>
