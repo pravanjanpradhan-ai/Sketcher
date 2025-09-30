@@ -57,25 +57,53 @@ void Sketcher::setupUI()
         mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
 	mMenuBar = new QMenuBar(this);
 	setMenuBar(mMenuBar);
-    // File Menu
-    QMenu* fileMenu = mMenuBar->addMenu("File");
-    QAction* newAction = fileMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_FileIcon), "New");
-    newAction->setShortcut(QKeySequence::New);   // Ctrl+N
-    QAction* openAction = fileMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_DirOpenIcon), "Open");
-    openAction->setShortcut(QKeySequence::Open);   // Ctrl+O
-    QAction* saveAction = fileMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_DialogSaveButton), "Save");
-    saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
 
+
+    // File Menu
+	fileMenu = new QMenu("File", mMenuBar);
+	mMenuBar->addMenu(fileMenu);
+
+    QAction* newAction = new QAction(fileMenu);
+	fileMenu->addAction(newAction);
+	newAction->setIcon(mMenuBar->style()->standardIcon(QStyle::SP_FileIcon));
+	newAction->setText("New");
+	newAction->setShortcut(QKeySequence::New);   // Ctrl+N
+
+	QAction* openAction = new QAction(fileMenu);
+	fileMenu->addAction(openAction);
+	openAction->setIcon(mMenuBar->style()->standardIcon(QStyle::SP_DirOpenIcon));
+	openAction->setText("Open");
+	openAction->setShortcut(QKeySequence::Open);   // Ctrl+O
+
+	saveAction = new QAction(fileMenu);
+	fileMenu->addAction(saveAction);
+	saveAction->setIcon(mMenuBar->style()->standardIcon(QStyle::SP_DialogSaveButton));
+	saveAction->setText("Save");
+	saveAction->setShortcut(QKeySequence::Save);   // Ctrl+S
+        
 
     // Edit Menu
-    QMenu* editMenu = mMenuBar->addMenu("Edit");
-    QAction* cleanAction = editMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_TrashIcon), "Clean");
-    cleanAction->setShortcut(Qt::CTRL | Qt::Key_X); // Ctrl+X
-    QAction* undoAction = editMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_ArrowBack), "Undo");
-    undoAction->setShortcut(QKeySequence::Undo);   // Ctrl+Z
-    QAction* redoAction = editMenu->addAction(mMenuBar->style()->standardIcon(QStyle::SP_ArrowForward), "Redo");
-    redoAction->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Z);   // Ctrl+Shift+Z
+	editMenu = new QMenu("Edit", mMenuBar);
+	mMenuBar->addMenu(editMenu);
 
+	cleanAction = new QAction(editMenu);
+	editMenu->addAction(cleanAction);
+	cleanAction->setIcon(mMenuBar->style()->standardIcon(QStyle::SP_TrashIcon));
+	cleanAction->setText("Clean");
+	cleanAction->setShortcut(Qt::CTRL | Qt::Key_X); // Ctrl+X
+
+	undoAction = new QAction(editMenu);
+	editMenu->addAction(undoAction);
+	undoAction->setIcon(mMenuBar->style()->standardIcon(QStyle::SP_ArrowBack));
+	undoAction->setText("Undo");
+	undoAction->setShortcut(QKeySequence::Undo);   // Ctrl+Z
+
+	redoAction = new QAction(editMenu);
+	editMenu->addAction(redoAction);
+	redoAction->setIcon(mMenuBar->style()->standardIcon(QStyle::SP_ArrowForward));
+	redoAction->setText("Redo");
+	redoAction->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_Z);   // Ctrl+Shift+Z
+	
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
 

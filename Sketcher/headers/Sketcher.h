@@ -51,6 +51,8 @@ private:
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
 	QMenuBar* mMenuBar;
+	QMenu* fileMenu;
+	QMenu* editMenu;
 	QStatusBar* mStatusBar;
 	QLabel* mStatusLabel;
     QLabel* posLabel;   // Label to display mouse position
@@ -63,6 +65,13 @@ private:
     QToolButton* mPolygonTool; 
     QToolButton* mPolyLineTool;
     QToolButton* mAxesTool;
+
+    QAction* newAction;
+	QAction* openAction;
+	QAction* saveAction;
+	QAction* cleanAction;
+	QAction* undoAction;
+	QAction* redoAction;
     std::vector<Point> tempPoints;
 
 private slots:
