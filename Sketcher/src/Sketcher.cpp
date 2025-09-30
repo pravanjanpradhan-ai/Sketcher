@@ -6,9 +6,6 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPainterPath>
-#include <QStatusBar>
-#include <QLabel>
-#include <QMouseEvent>
 #include "Point.h"
 #include "Line.h"
 #include "Circle.h"
@@ -35,7 +32,6 @@ void Sketcher::setupUI()
 {
     // Central widget and layout
     mCentralWidget = new QWidget(this);
-   
     mCentralgridWidget = new QGridLayout(mCentralWidget);
 
     // Scene + Canvas
@@ -59,7 +55,6 @@ void Sketcher::setupUI()
     for (int y = -height; y <= height; y += 50)
         mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
 
-
     // File Menu
     QMenu* fileMenu = menuBar()->addMenu("File");
     QAction* newAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_FileIcon), "New");
@@ -82,7 +77,6 @@ void Sketcher::setupUI()
     mToolBar = new QToolBar(this);
     addToolBar(mToolBar);
 
-	
     // Point Tool
     mPointTool = new QToolButton(mToolBar);
     mPointTool->setIcon(QIcon(":/Sketcher/Point.png"));
@@ -205,7 +199,7 @@ void Sketcher::mouseMoveEvent(QMouseEvent* event)
 //    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
 //}
 
-void Sketcher::drawConnectedPoints(std::vector<Point> p, Shape* shapes)
+void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
     if (p.size() > 36)
     {
@@ -219,8 +213,6 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p, Shape* shapes)
     QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
     item->setPen(QPen(Qt::black, 2));
     mScene->addItem(item);
-    mShapes[mShapeId++].push_back(shapes);
-    mUndoRedo->recordAdd(item, shapes);
 }
 
 void Sketcher::drawAxesTool()
@@ -265,7 +257,7 @@ void Sketcher::drawAxesTool()
 
 
     // Draw origin point
-        Point origin(0, 0);
+    Point origin(0, 0);
     QBrush brush(QColor("#FF0000"));
     QGraphicsEllipseItem* itemOrigin = new QGraphicsEllipseItem(origin.x - 2, origin.y - 2, 4, 4);
     itemOrigin->setPen(QPen(Qt::transparent));   // border color
@@ -278,15 +270,25 @@ void Sketcher::drawAxesTool()
 void Sketcher::finishShape() {
     if (mCurrentTool == ToolType::Polygon && tempPoints.size() >= 3) {
         Polygons* poly = new Polygons(tempPoints);
-        drawConnectedPoints(poly->getCoordinates(), poly);
+        std::vector<Point> pts = poly->getCoordinates();
+        QPolygonF shape;
+        for (int i = 0; i < pts.size(); i++) {
+            shape << QPointF(pts[i].x, pts[i].y);
+        }
+        QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+        item->setPen(QPen(Qt::black, 2));
+        mScene->addItem(item);
+        mShapes[6].push_back(poly);
+        mUndoRedo->recordAdd(item, poly);
     }
     else if (mCurrentTool == ToolType::PolyLine && tempPoints.size() >= 2) {
         PolyLine* pl = new PolyLine(tempPoints);
+        std::vector<Point> pts = pl->getCoordinates();
 
         QPainterPath path;
-        path.moveTo(tempPoints[0].x, tempPoints[0].y);
-        for (size_t i = 1; i < tempPoints.size(); ++i) {
-            path.lineTo(tempPoints[i].x, tempPoints[i].y);
+        path.moveTo(pts[0].x, pts[0].y);
+        for (size_t i = 1; i < pts.size(); ++i) {
+            path.lineTo(pts[i].x, pts[i].y);
         }
 
         QGraphicsPathItem* item = new QGraphicsPathItem(path);
@@ -295,7 +297,7 @@ void Sketcher::finishShape() {
         pen.setCapStyle(Qt::RoundCap);
         item->setPen(pen);
         mScene->addItem(item);
-        mShapes[mShapeId++].push_back(pl);
+        mShapes[7].push_back(pl);
         mUndoRedo->recordAdd(item, pl);
     }
 
@@ -313,11 +315,11 @@ void Sketcher::handleCanvasClick(QPointF pos) {
     switch (mCurrentTool) {
     case ToolType::Point: {
         QBrush brush(QColor("#3DB9E7"));
-        auto* item = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
+        QGraphicsEllipseItem* item = new QGraphicsEllipseItem(p.x - 2, p.y - 2, 4, 4);
         item->setPen(QPen(Qt::transparent));
         item->setBrush(brush);
         mScene->addItem(item);
-        mShapes[mShapeId++].push_back(p);
+        mShapes[1].push_back(p);
         mUndoRedo->recordAdd(item, p);
         break;
     }
@@ -325,8 +327,16 @@ void Sketcher::handleCanvasClick(QPointF pos) {
         tempPoints.push_back(p);
         if (tempPoints.size() == 2) {
             Line* l = new Line(tempPoints[0], tempPoints[1]);
-            auto coords = l->getCoordinates();
-            drawConnectedPoints(coords, l);
+            std::vector<Point> p = l->getCoordinates();
+            QPolygonF shape;
+            for (int i = 0; i < p.size(); i++) {
+                shape << QPointF(p[i].x, p[i].y);
+            }
+            QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+            item->setPen(QPen(Qt::black, 2));
+            mScene->addItem(item);
+            mShapes[2].push_back(l);
+            mUndoRedo->recordAdd(item, l);
             tempPoints.clear();
         }
         break;
@@ -335,8 +345,16 @@ void Sketcher::handleCanvasClick(QPointF pos) {
         tempPoints.push_back(p);
         if (tempPoints.size() == 3) {
             Triangle* t = new Triangle(tempPoints[0], tempPoints[1], tempPoints[2]);
-            auto coords = t->getCoordinates();
-            drawConnectedPoints(coords, t);
+            std::vector<Point> p = t->getCoordinates();
+            QPolygonF shape;
+            for (int i = 0; i < p.size(); i++) {
+                shape << QPointF(p[i].x, p[i].y);
+            }
+            QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+            item->setPen(QPen(Qt::black, 2));
+            mScene->addItem(item);
+            mShapes[3].push_back(t);
+            mUndoRedo->recordAdd(item, t);
             tempPoints.clear();
         }
         break;
@@ -345,8 +363,16 @@ void Sketcher::handleCanvasClick(QPointF pos) {
         tempPoints.push_back(p);
         if (tempPoints.size() == 2) {
             Rectangles* r = new Rectangles(tempPoints[0], tempPoints[1]);
-            auto coords = r->getCoordinates();
-            drawConnectedPoints(coords, r);
+            std::vector<Point> p = r->getCoordinates();
+            QPolygonF shape;
+            for (int i = 0; i < p.size(); i++) {
+                shape << QPointF(p[i].x, p[i].y);
+            }
+            QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+            item->setPen(QPen(Qt::black, 2));
+            mScene->addItem(item);
+            mShapes[4].push_back(r);
+            mUndoRedo->recordAdd(item, r);
             tempPoints.clear();
         }
         break;
@@ -355,8 +381,18 @@ void Sketcher::handleCanvasClick(QPointF pos) {
         tempPoints.push_back(p);
         if (tempPoints.size() == 2) {
             Circle* c = new Circle(tempPoints[0], tempPoints[1]);
-            auto coords = c->getCoordinates();
-            drawConnectedPoints(coords, c);
+            std::vector<Point> p = c->getCoordinates();
+            p.erase(p.begin());
+            p.erase(p.begin());
+            QPolygonF shape;
+            for (int i = 0; i < p.size(); i++) {
+                shape << QPointF(p[i].x, p[i].y);
+            }
+            QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
+            item->setPen(QPen(Qt::black, 2));
+            mScene->addItem(item);
+            mShapes[5].push_back(c);
+            mUndoRedo->recordAdd(item, c);
             tempPoints.clear();
         }
         break;
@@ -446,52 +482,48 @@ void Sketcher::onNewActionTriggered()
 void Sketcher::onOpenActionTriggered()
 {
     QString mfilename = QFileDialog::getOpenFileName(
-        this, "Open Shapes", "", "Text Files (*.txt)");
+        this, "Open Shapes", "", "Sketcher Files (*.skt)");
 
     if (mfilename.isEmpty())
         return;
 
     std::string filename = mfilename.toStdString();
 
-    // Create a new Sketcher window
-    Sketcher* newWindow = new Sketcher();
-    newWindow->show();
-
-    // Load shapes into new window
     FileWrite input;
-    if (!input.read(filename, newWindow->mShapes)) {
+    if (!input.read(filename, mShapes)) {
         QMessageBox::warning(this, "Error", "Failed to open file!");
-        newWindow->close();
         return;
     }
 
     // Draw loaded shapes into new window's scene
-    for (const auto& pair : newWindow->mShapes) {
+    for (const auto& pair : mShapes) {
         for (const auto& item : pair.second) {
             if (std::holds_alternative<Shape*>(item)) {
                 Shape* shape = std::get<Shape*>(item);
                 if (shape) {
                     std::vector<Point> p = shape->getCoordinates();
-                    //newWindow->drawConnectedPoints(p, shape);
-                    if (p.size() > 36)
-                    {
-                        p.erase(p.begin());
-                        p.erase(p.begin());
+                    if (shape->getName() == "PolyLine") {
+                        QPainterPath path;
+                        path.moveTo(p[0].x, p[0].y);
+                        for (size_t i = 1; i < p.size(); ++i) {
+                            path.lineTo(p[i].x, p[i].y);
+                        }
+
+                        QGraphicsPathItem* item = new QGraphicsPathItem(path);
+                        QPen pen(Qt::black, 2);
+                        pen.setJoinStyle(Qt::RoundJoin);
+                        pen.setCapStyle(Qt::RoundCap);
+                        item->setPen(pen);
+                        mScene->addItem(item);
                     }
-                    QPolygonF shape;
-                    for (int i = 0; i < p.size(); i++) {
-                        shape << QPointF(p[i].x, p[i].y);
-                    }
-                    QGraphicsPolygonItem* item = new QGraphicsPolygonItem(shape);
-                    item->setPen(QPen(Qt::black, 2));
-                    newWindow->mScene->addItem(item);
+                    else drawConnectedPoints(p);
                 }
             }
             else if (std::holds_alternative<Point>(item)) {
                 Point pt = std::get<Point>(item);
                 QBrush brush(QColor("#3DB9E7"));
-                //newWindow->mScene->addEllipse(pt.x - 2, pt.y - 2, 4, 4,
-                   // QPen(Qt::transparent), brush);
+                mScene->addEllipse(pt.x - 2, pt.y - 2, 4, 4,
+                    QPen(Qt::transparent), brush);
             }
         }
     }
@@ -502,7 +534,7 @@ void Sketcher::onOpenActionTriggered()
 void Sketcher::onSaveActionTriggered()
 {
     QString mfilename = QFileDialog::getSaveFileName(
-        this, "Save Shapes", "", "Text Files (*.txt)");
+        this, "Save Shapes", "", "Sketcher Files (*.skt)");
 
     if (!mfilename.isEmpty()) {
         std::string filename = mfilename.toStdString();
@@ -563,8 +595,6 @@ void Sketcher::onCleanActionTriggered()
     // Record clear action
     mUndoRedo->recordClear(snapshot);
 
-    // Clear scene
-   // mScene->clear();
     // Now actually clear scene
     mScene->clear();
 
@@ -580,18 +610,12 @@ void Sketcher::onCleanActionTriggered()
     mShapeId = 0;
 }
 
-//void Sketcher::onUndoActionTriggered() {
-//    mUndoRedo->undo(mScene, mShapes);
-//}
 void Sketcher::onUndoActionTriggered() {
     if (mUndoRedo->canUndo()) {
         mUndoRedo->undo(mScene);
     }
 }
 
-//void Sketcher::onRedoActionTriggered() {
-//    mUndoRedo->redo(mScene, mShapes);
-//}
 void Sketcher::onRedoActionTriggered() {
     if (mUndoRedo->canRedo()) {
         mUndoRedo->redo(mScene);
