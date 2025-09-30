@@ -16,7 +16,6 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include "UndoRedo.h"
-#include "CanvasView.h"
 
 using SketchData = std::variant<Shape*, Point>;
 class Sketcher : public QMainWindow

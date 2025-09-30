@@ -40,8 +40,6 @@ void Sketcher::setupUI()
     mCanvas->setMouseTracking(true); // important
     mCentralgridWidget->addWidget(mCanvas,0,0);
 	//Mouse click
-    mCanvas = new CanvasView(mScene, mCentralWidget);
-    static_cast<CanvasView*>(mCanvas)->setSketcher(this);
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
 
     setCentralWidget(mCentralWidget);
@@ -221,12 +219,7 @@ void Sketcher::mouseMoveEvent(QMouseEvent* event)
 
     QMainWindow::mouseMoveEvent(event);
 }
-//void Sketcher::mouseMoveEvent(QMouseEvent* event)
-//{
-//    int x = event->pos().x();
-//    int y = event->pos().y();
-//    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
-//}
+
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
