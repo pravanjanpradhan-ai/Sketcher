@@ -21,7 +21,7 @@ Sketcher::Sketcher(QWidget* parent)
 {
     setupUI();
     resize(800, 600);
-    drawAxesTool();
+    //drawAxesTool();
     //mouseMoveEvent();
 
 }
@@ -127,8 +127,6 @@ void Sketcher::setupUI()
     mAxesTool->setToolTip("Axis");
     mToolBar->addWidget(mAxesTool);
 
-
-
     setMouseTracking(true);
     //if (mCentralWidget)
     mCentralWidget->setMouseTracking(true);
@@ -154,7 +152,7 @@ void Sketcher::setupUI()
     connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
     connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
 
-    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
+    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::ondrawAxesToolClicked);
 
     connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
     connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
@@ -170,20 +168,11 @@ void Sketcher::mouseMoveEvent(QMouseEvent* event)
 {
     // Check if mouse is over the canvas
     QPoint viewPos = mCanvas->mapFromParent(event->pos());
-    if (mCanvas->rect().contains(viewPos)) {
         // Map to scene coordinates
         QPointF scenePos = mCanvas->mapToScene(viewPos);
         int x = event->pos().x();
         int y = event->pos().y();
-       /* int x = static_cast<int>(scenePos.x());
-        int y = static_cast<int>(scenePos.y());*/
         mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
-    }
-    else {
-        mStatusLabel->setText("X: -, Y: -");
-    }
-
-    QMainWindow::mouseMoveEvent(event);
 }
 //void Sketcher::mouseMoveEvent(QMouseEvent* event)
 //{
@@ -215,9 +204,17 @@ void Sketcher::drawAxesTool()
     int width = 20000;
     int height = 20000;
     for (int x = -width; x <= width; x += 50)
-        mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
+    {
+        QGraphicsLineItem* itemXgrid = new QGraphicsLineItem(x, -width, x, width);
+        itemXgrid->setPen(QPen(Qt::lightGray));
+        mScene->addItem(itemXgrid);
+    }   
     for (int y = -height; y <= height; y += 50)
-        mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
+    {
+        QGraphicsLineItem* itemYgrid = new QGraphicsLineItem(-height, y, height, y);
+        itemYgrid->setPen(QPen(Qt::lightGray));
+        mScene->addItem(itemYgrid);
+    }
 	
 	// Axes lines
     /*int width = 20000;
@@ -261,7 +258,7 @@ void Sketcher::drawAxesTool()
     itemOrigin->setPen(QPen(Qt::transparent));   // border color
     itemOrigin->setBrush(brush);
     mScene->addItem(itemOrigin);
-
+    isAxis = true;
 }
 
 // --- Slots for drawing ---
@@ -442,25 +439,43 @@ void Sketcher::onPolyLineToolClicked()
     mCurrentTool = ToolType::PolyLine;
 }
 
+void Sketcher::ondrawAxesToolClicked()
+{
+    if (!isAxis)
+    {
+        drawAxesTool();
+        /*mScene->addItem(axisItem);
+        isAxis = true;*/
+    }
+    else if (isAxis)
+    {
+        //mScene->removeItem(drawAxesTool());
+    }
+    
+}
+
 void Sketcher::onNewActionTriggered()
 {
     if (!mShapes.empty() && !isSave) {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(
-            this,
-            "Save Shapes",
-            "Do you want to save your current shapes before starting a new sketch?",
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel
-        );
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Save Shapes");
+        msgBox.setText("Do you want to save your current shapes before starting a new sketch?");
 
-        if (reply == QMessageBox::Yes) {
-            // Call your existing save slot
+        // Add buttons manually
+        QPushButton* saveButton = msgBox.addButton("Save", QMessageBox::AcceptRole);
+        QPushButton* dontSaveButton = msgBox.addButton("Don't Save", QMessageBox::DestructiveRole);
+        QPushButton* cancelButton = msgBox.addButton("Cancel", QMessageBox::RejectRole);
+
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == saveButton) {
             onSaveActionTriggered();
+            if (!isSave) return;
         }
-        else if (reply == QMessageBox::Cancel) {
+        else if (msgBox.clickedButton() == cancelButton) {
             return;
         }
-        // if No → continue without saving
+        // if Discard → continue without saving
     }
 
     mScene->clear();
@@ -474,7 +489,6 @@ void Sketcher::onNewActionTriggered()
         }
     }
     mShapes.clear();
-    mShapeId = 0;
 }
 
 void Sketcher::onOpenActionTriggered()

@@ -40,6 +40,7 @@ private:
     std::unordered_map<int, std::vector<SketchData>> mShapes;
     int mShapeId = 0;
     bool isSave = false;
+    bool isAxis = false;
     UndoRedoManager* mUndoRedo = new UndoRedoManager();
     enum class ToolType { None, Point, Line, Triangle, Rectangle, Circle, Polygon, PolyLine };
     ToolType mCurrentTool = ToolType::None;
@@ -54,7 +55,7 @@ private:
 	QStatusBar* mStatusBar;
 	QLabel* mStatusLabel;
     QLabel* posLabel;   // Label to display mouse position
-
+    QGraphicsItem* axisItem = nullptr;
     QToolButton* mPointTool;
     QToolButton* mLineTool;     
     QToolButton* mTriangleTool;
@@ -73,6 +74,8 @@ private slots:
     void onCircleToolClicked();
     void onPolygonToolClicked();
     void onPolyLineToolClicked();
+
+    void ondrawAxesToolClicked();
 
     void onNewActionTriggered();
     void onOpenActionTriggered();
