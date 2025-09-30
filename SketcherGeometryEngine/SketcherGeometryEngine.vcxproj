@@ -123,6 +123,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir)header;$(ProjectDir);$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -160,6 +161,8 @@
     <ClInclude Include="header\FileWrite.h" />
     <ClInclude Include="header\Line.h" />
     <ClInclude Include="header\Point.h" />
+    <ClInclude Include="header\Polygon.h" />
+    <ClInclude Include="header\PolyLine.h" />
     <ClInclude Include="header\Rectangle.h" />
     <ClInclude Include="header\Shape.h" />
     <ClInclude Include="header\Triangle.h" />
@@ -179,6 +182,8 @@
     <ClCompile Include="src\FileWrite.cpp" />
     <ClCompile Include="src\Line.cpp" />
     <ClCompile Include="src\Point.cpp" />
+    <ClCompile Include="src\Polygon.cpp" />
+    <ClCompile Include="src\PolyLine.cpp" />
     <ClCompile Include="src\Rectangle.cpp" />
     <ClCompile Include="src\Shape.cpp" />
     <ClCompile Include="src\Triangle.cpp" />
