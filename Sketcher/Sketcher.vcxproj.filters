@@ -37,6 +37,12 @@
     <ClCompile Include="src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\CanvasView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UndoRedo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="headers\MyGraphicsView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,9 +54,15 @@
     <QtMoc Include="headers\MyGraphicsView.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="headers\CanvasView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\UndoRedo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

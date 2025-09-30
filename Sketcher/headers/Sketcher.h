@@ -2,22 +2,23 @@
 
 #include <QtWidgets/QMainWindow>
 #include <vector>
-#include "Point.h"
+#include <unordered_map>
 #include <variant>
+#include <QStatusBar>
+#include <QLabel>
+#include <QMouseEvent>
+#include "Point.h"
 #include "Shape.h"
-#include <QToolBar>
-#include <QToolButton>
-#include <QGridLayout>
 #include <QGraphicsView>
 #include <QGraphicsScene>
-#include <QPolygonF>
-#include <QPen>
-#include <QBrush>
+#include <QGridLayout>
+#include <QToolBar>
+#include <QToolButton>
+#include <QVBoxLayout>
+#include "UndoRedo.h"
+#include "CanvasView.h"
 
-
-
-using SketchData = std::variant<Point, Shape*>;
-
+using SketchData = std::variant<Shape*, Point>;
 class Sketcher : public QMainWindow
 {
     Q_OBJECT
@@ -25,40 +26,58 @@ class Sketcher : public QMainWindow
 public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
+    void drawConnectedPoints(std::vector<Point> p);
+    void drawAxesTool();
+    void handleCanvasClick(QPointF pos);
+    void finishShape();
+    void cancelShape();
+
+protected:
+    void mouseMoveEvent(QMouseEvent* event) override;  //Latesh -  status bar - handle mouse movement
 
 private:
     void setupUI();
-	std::unordered_map<int,std::vector< SketchData> > mShapes;
-	int mShapeId = 0;
-	bool isSave = false;
-public:
+    std::unordered_map<int, std::vector<SketchData>> mShapes;
+    int mShapeId = 0;
+    bool isSave = false;
+    UndoRedoManager* mUndoRedo = new UndoRedoManager();
+    enum class ToolType { None, Point, Line, Triangle, Rectangle, Circle, Polygon, PolyLine };
+    ToolType mCurrentTool = ToolType::None;
+
+private:
     QWidget* mCentralWidget;
+    QGraphicsView* mCanvas;
+    QGraphicsScene* mScene;
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
+	QStatusBar* mStatusBar;
+	QLabel* mStatusLabel;
+    QLabel* posLabel;   // Label to display mouse position
+
     QToolButton* mPointTool;
-    QToolButton* mLineTool;
+    QToolButton* mLineTool;     
     QToolButton* mTriangleTool;
     QToolButton* mRectangleTool;
     QToolButton* mCircleTool;
-	QMenu* mFileMenu;
-	QMenuBar* mMenuBar;
-	QMenu* mEditMenu;
-    QAction* newAction;
-    QAction* saveAction;
-    void drawConnectedPoints(std::vector<Point>& points);
-	QGraphicsView* mGraphicsView;
-    QGraphicsScene* mScene;
-
+    QToolButton* mPolygonTool; 
+    QToolButton* mPolyLineTool;
+    QToolButton* mAxesTool;
+    std::vector<Point> tempPoints;
 
 private slots:
     void onPointToolClicked();
-	void onLineToolClicked();
-	void onTriangleToolClicked();
-	void onRectangleToolClicked();
-	void onCircleToolClicked();
-	void onNewFile();
-	void onOpenFile();
-	void onSaveFile();
-	void onSaveAsFile();
-   
+    void onLineToolClicked();
+    void onTriangleToolClicked();
+    void onRectangleToolClicked();
+    void onCircleToolClicked();
+    void onPolygonToolClicked();
+    void onPolyLineToolClicked();
+
+    void onNewActionTriggered();
+    void onOpenActionTriggered();
+    void onSaveActionTriggered();
+
+    void onCleanActionTriggered();
+    void onUndoActionTriggered();
+    void onRedoActionTriggered();
 };
