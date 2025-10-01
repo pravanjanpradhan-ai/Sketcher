@@ -135,6 +135,7 @@
     <QtMoc Include="headers\Sketcher.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\CanvasView.h" />
     <ClInclude Include="headers\stdafx.h" />
     <ClInclude Include="headers\UndoRedo.h" />
   </ItemGroup>

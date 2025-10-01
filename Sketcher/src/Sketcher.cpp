@@ -21,7 +21,7 @@ Sketcher::Sketcher(QWidget* parent)
 {
     setupUI();
     resize(800, 600);
-    drawAxesTool();
+    //drawAxesTool();
     //mouseMoveEvent();
 
 }
@@ -36,23 +36,15 @@ void Sketcher::setupUI()
 
     // Scene + Canvas
     mScene = new QGraphicsScene(this);
+
+	//Mouse click
     mCanvas = new QGraphicsView(mScene, mCentralWidget);
     mCanvas->setMouseTracking(true); // important
-    mCentralgridWidget->addWidget(mCanvas,0,0);
-	//Mouse click
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
 
     setCentralWidget(mCentralWidget);
     mCanvas->scale(1, -1);
-
-
-     //Add a grid for reference
-    int width = 2000;
-    int height = 2000;
-    for (int x = -width; x <= width; x += 50)
-        mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
-    for (int y = -height; y <= height; y += 50)
-        mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
+    
 	mMenuBar = new QMenuBar(this);
 	setMenuBar(mMenuBar);
 
@@ -156,12 +148,10 @@ void Sketcher::setupUI()
 
     // Axes Tool
     mAxesTool = new QToolButton(mToolBar);
-    mAxesTool->setIcon(QIcon(":/Sketcher/PolyLine.png"));
+    mAxesTool->setIcon(QIcon(":/Sketcher/axis.jpg"));
     mAxesTool->setIconSize(QSize(32, 32));
     mAxesTool->setToolTip("Axis");
     mToolBar->addWidget(mAxesTool);
-
-
 
     setMouseTracking(true);
     //if (mCentralWidget)
@@ -188,41 +178,38 @@ void Sketcher::setupUI()
     connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
     connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
 
-    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::drawAxesTool);
+    connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::ondrawAxesToolClicked);
 
-    connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
-    connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
-    connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
+    //connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
+    //connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
+    //connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
     
-    connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
-    connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
-    connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
+    //connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
+    //connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
+    //connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
 
 
-void Sketcher::mouseMoveEvent(QMouseEvent* event)
-{
-    // Check if mouse is over the canvas
-    QPoint viewPos = mCanvas->mapFromParent(event->pos());
-    if (mCanvas->rect().contains(viewPos)) {
-        // Map to scene coordinates
-        QPointF scenePos = mCanvas->mapToScene(viewPos);
-        int x = event->pos().x();
-        int y = event->pos().y();
-       /* int x = static_cast<int>(scenePos.x());
-        int y = static_cast<int>(scenePos.y());*/
-        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
-    }
-    else {
-        mStatusLabel->setText("X: -, Y: -");
-    }
-
-    QMainWindow::mouseMoveEvent(event);
-}
-
+//void Sketcher::mouseMoveEvent(QMouseEvent* event)
+//{
+//    // Check if mouse is over the canvas
+//    QPoint viewPos = mCanvas->mapFromParent(event->pos());
+//        // Map to scene coordinates
+//        QPointF scenePos = mCanvas->mapToScene(viewPos);
+//        int x = event->pos().x();
+//        int y = event->pos().y();
+//        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+//}
+//void Sketcher::mouseMoveEvent(QMouseEvent* event)
+//{
+//    int x = event->pos().x();
+//    int y = event->pos().y();
+//    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+//}
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
+
     if (p.size() > 36)
     {
         p.erase(p.begin());
@@ -239,11 +226,25 @@ void Sketcher::drawConnectedPoints(std::vector<Point> p)
 
 void Sketcher::drawAxesTool()
 {
-	//int width = this->size().width();
-	//int height = this->size().height();
-
-    int width = 2000;
-    int height = 2000;
+    //Add a grid for reference
+    int width = 20000;
+    int height = 20000;
+    for (int x = -width; x <= width; x += 50)
+    {
+        QGraphicsLineItem* itemXgrid = new QGraphicsLineItem(x, -width, x, width);
+        itemXgrid->setPen(QPen(Qt::lightGray));
+        mScene->addItem(itemXgrid);
+    }   
+    for (int y = -height; y <= height; y += 50)
+    {
+        QGraphicsLineItem* itemYgrid = new QGraphicsLineItem(-height, y, height, y);
+        itemYgrid->setPen(QPen(Qt::lightGray));
+        mScene->addItem(itemYgrid);
+    }
+	
+	// Axes lines
+    /*int width = 20000;
+    int height = 20000;*/
 	double x1 = -width ;
 	double y1 = 0;
 	double x2 = width;
@@ -259,7 +260,6 @@ void Sketcher::drawAxesTool()
     QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(shapeX);
     itemX->setPen(QPen(Qt::blue, 1));
     mScene->addItem(itemX);
-
 
 	double x3 = 0;
 	double y3 = -height;
@@ -277,7 +277,6 @@ void Sketcher::drawAxesTool()
 	itemY->setPen(QPen(Qt::blue, 1));
 	mScene->addItem(itemY);
 
-
     // Draw origin point
     Point origin(0, 0);
     QBrush brush(QColor("#FF0000"));
@@ -285,7 +284,7 @@ void Sketcher::drawAxesTool()
     itemOrigin->setPen(QPen(Qt::transparent));   // border color
     itemOrigin->setBrush(brush);
     mScene->addItem(itemOrigin);
-
+    isAxis = true;
 }
 
 // --- Slots for drawing ---
@@ -466,25 +465,43 @@ void Sketcher::onPolyLineToolClicked()
     mCurrentTool = ToolType::PolyLine;
 }
 
+void Sketcher::ondrawAxesToolClicked()
+{
+    if (!isAxis)
+    {
+        drawAxesTool();
+        /*mScene->addItem(axisItem);
+        isAxis = true;*/
+    }
+    else if (isAxis)
+    {
+        //mScene->removeItem(drawAxesTool());
+    }
+    
+}
+
 void Sketcher::onNewActionTriggered()
 {
     if (!mShapes.empty() && !isSave) {
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(
-            this,
-            "Save Shapes",
-            "Do you want to save your current shapes before starting a new sketch?",
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel
-        );
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Save Shapes");
+        msgBox.setText("Do you want to save your current shapes before starting a new sketch?");
 
-        if (reply == QMessageBox::Yes) {
-            // Call your existing save slot
+        // Add buttons manually
+        QPushButton* saveButton = msgBox.addButton("Save", QMessageBox::AcceptRole);
+        QPushButton* dontSaveButton = msgBox.addButton("Don't Save", QMessageBox::DestructiveRole);
+        QPushButton* cancelButton = msgBox.addButton("Cancel", QMessageBox::RejectRole);
+
+        msgBox.exec();
+
+        if (msgBox.clickedButton() == saveButton) {
             onSaveActionTriggered();
+            if (!isSave) return;
         }
-        else if (reply == QMessageBox::Cancel) {
+        else if (msgBox.clickedButton() == cancelButton) {
             return;
         }
-        // if No → continue without saving
+        // if Discard → continue without saving
     }
 
     mScene->clear();
@@ -498,7 +515,6 @@ void Sketcher::onNewActionTriggered()
         }
     }
     mShapes.clear();
-    mShapeId = 0;
 }
 
 void Sketcher::onOpenActionTriggered()
@@ -641,5 +657,74 @@ void Sketcher::onUndoActionTriggered() {
 void Sketcher::onRedoActionTriggered() {
     if (mUndoRedo->canRedo()) {
         mUndoRedo->redo(mScene);
+    }
+}
+
+void Sketcher::mousePressEvent(QMouseEvent* event) {
+
+    QPointF pos = mCanvas->mapToScene(event->pos());
+
+    if (event->button() == Qt::RightButton) {
+        // Right click -> finish polygon/polyline
+        finishShape();
+    }
+    else if (event->button() == Qt::LeftButton) {
+        // Left click -> add point
+        handleCanvasClick(pos);
+    }
+    else if (event->button() == Qt::MiddleButton) {
+        m_panning = true;
+        m_lastPanPoint = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+        event->accept();
+        return;
+    }
+    QMainWindow::mousePressEvent(event);
+}
+
+void Sketcher::wheelEvent(QWheelEvent* event) {
+    // simple step zoom with mouse wheel
+    const double factor = 1.15;
+    if (event->angleDelta().y() > 0) {
+        mCanvas->scale(factor, factor); // zoom in (when wheel is scrolled up and it is taken as +ve) 
+    }
+    else {
+        mCanvas->scale(1.0 / factor, 1.0 / factor); // zoom out (when wheel is scrolled up and it is taken as -ve)
+    }
+    QMainWindow::wheelEvent(event);
+}
+
+void Sketcher::mouseMoveEvent(QMouseEvent* event) {
+    if (m_panning) {
+        QPoint delta = event->pos() - m_lastPanPoint;
+        m_lastPanPoint = event->pos();
+        mCanvas->horizontalScrollBar()->setValue(mCanvas->horizontalScrollBar()->value() - delta.x());
+        mCanvas->verticalScrollBar()->setValue(mCanvas->verticalScrollBar()->value() - delta.y());
+        event->accept();
+        return;
+    }
+    QMainWindow::mouseMoveEvent(event);
+}
+
+void Sketcher::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::MiddleButton && m_panning) {
+        m_panning = false;
+        setCursor(Qt::ArrowCursor);
+        event->accept();
+        return;
+    }
+    QMainWindow::mouseReleaseEvent(event);
+}
+
+void Sketcher::keyPressEvent(QKeyEvent* event) {
+
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        finishShape();
+    }
+    else if (event->key() == Qt::Key_Escape) {
+        cancelShape();
+    }
+    else {
+        QMainWindow::keyPressEvent(event);
     }
 }
