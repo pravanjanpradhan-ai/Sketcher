@@ -36,12 +36,10 @@ void Sketcher::setupUI()
 
     // Scene + Canvas
     mScene = new QGraphicsScene(this);
+
+	//Mouse click
     mCanvas = new QGraphicsView(mScene, mCentralWidget);
     mCanvas->setMouseTracking(true); // important
-    mCentralgridWidget->addWidget(mCanvas,0,0);
-	//Mouse click
-    mCanvas = new CanvasView(mScene, mCentralWidget);
-    static_cast<CanvasView*>(mCanvas)->setSketcher(this);
     mCentralgridWidget->addWidget(mCanvas, 0, 0);
 
     setCentralWidget(mCentralWidget);
@@ -154,26 +152,26 @@ void Sketcher::setupUI()
 
     connect(mAxesTool, &QToolButton::clicked, this, &Sketcher::ondrawAxesToolClicked);
 
-    connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
-    connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
-    connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
+    //connect(newAction, &QAction::triggered, this, &Sketcher::onNewActionTriggered); 
+    //connect(openAction, &QAction::triggered, this, &Sketcher::onOpenActionTriggered);
+    //connect(saveAction, &QAction::triggered, this, &Sketcher::onSaveActionTriggered);
     
-    connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
-    connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
-    connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
+    //connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
+    //connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
+    //connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 }
 
 
-void Sketcher::mouseMoveEvent(QMouseEvent* event)
-{
-    // Check if mouse is over the canvas
-    QPoint viewPos = mCanvas->mapFromParent(event->pos());
-        // Map to scene coordinates
-        QPointF scenePos = mCanvas->mapToScene(viewPos);
-        int x = event->pos().x();
-        int y = event->pos().y();
-        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
-}
+//void Sketcher::mouseMoveEvent(QMouseEvent* event)
+//{
+//    // Check if mouse is over the canvas
+//    QPoint viewPos = mCanvas->mapFromParent(event->pos());
+//        // Map to scene coordinates
+//        QPointF scenePos = mCanvas->mapToScene(viewPos);
+//        int x = event->pos().x();
+//        int y = event->pos().y();
+//        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+//}
 //void Sketcher::mouseMoveEvent(QMouseEvent* event)
 //{
 //    int x = event->pos().x();
@@ -631,5 +629,74 @@ void Sketcher::onUndoActionTriggered() {
 void Sketcher::onRedoActionTriggered() {
     if (mUndoRedo->canRedo()) {
         mUndoRedo->redo(mScene);
+    }
+}
+
+void Sketcher::mousePressEvent(QMouseEvent* event) {
+
+    QPointF pos = mCanvas->mapToScene(event->pos());
+
+    if (event->button() == Qt::RightButton) {
+        // Right click -> finish polygon/polyline
+        finishShape();
+    }
+    else if (event->button() == Qt::LeftButton) {
+        // Left click -> add point
+        handleCanvasClick(pos);
+    }
+    else if (event->button() == Qt::MiddleButton) {
+        m_panning = true;
+        m_lastPanPoint = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+        event->accept();
+        return;
+    }
+    QMainWindow::mousePressEvent(event);
+}
+
+void Sketcher::wheelEvent(QWheelEvent* event) {
+    // simple step zoom with mouse wheel
+    const double factor = 1.15;
+    if (event->angleDelta().y() > 0) {
+        mCanvas->scale(factor, factor); // zoom in (when wheel is scrolled up and it is taken as +ve) 
+    }
+    else {
+        mCanvas->scale(1.0 / factor, 1.0 / factor); // zoom out (when wheel is scrolled up and it is taken as -ve)
+    }
+    QMainWindow::wheelEvent(event);
+}
+
+void Sketcher::mouseMoveEvent(QMouseEvent* event) {
+    if (m_panning) {
+        QPoint delta = event->pos() - m_lastPanPoint;
+        m_lastPanPoint = event->pos();
+        mCanvas->horizontalScrollBar()->setValue(mCanvas->horizontalScrollBar()->value() - delta.x());
+        mCanvas->verticalScrollBar()->setValue(mCanvas->verticalScrollBar()->value() - delta.y());
+        event->accept();
+        return;
+    }
+    QMainWindow::mouseMoveEvent(event);
+}
+
+void Sketcher::mouseReleaseEvent(QMouseEvent* event) {
+    if (event->button() == Qt::MiddleButton && m_panning) {
+        m_panning = false;
+        setCursor(Qt::ArrowCursor);
+        event->accept();
+        return;
+    }
+    QMainWindow::mouseReleaseEvent(event);
+}
+
+void Sketcher::keyPressEvent(QKeyEvent* event) {
+
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+        finishShape();
+    }
+    else if (event->key() == Qt::Key_Escape) {
+        cancelShape();
+    }
+    else {
+        QMainWindow::keyPressEvent(event);
     }
 }

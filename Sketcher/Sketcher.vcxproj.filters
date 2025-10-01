@@ -48,15 +48,15 @@
     <QtMoc Include="headers\Sketcher.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="headers\CanvasView.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="headers\stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\UndoRedo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\CanvasView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

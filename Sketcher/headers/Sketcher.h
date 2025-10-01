@@ -16,7 +16,6 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include "UndoRedo.h"
-#include "CanvasView.h"
 
 using SketchData = std::variant<Shape*, Point>;
 class Sketcher : public QMainWindow
@@ -33,7 +32,11 @@ public:
     void cancelShape();
 
 protected:
-    void mouseMoveEvent(QMouseEvent* event) override;  //Latesh -  status bar - handle mouse movement
+    void mousePressEvent(QMouseEvent* event) override; // Rituraj - Takes  mouse click position for coordinates, Pravanjan - panning with middle mouse button
+    void keyPressEvent(QKeyEvent* event) override; // for enter - polygon/polyline finish, esc - cancel shape
+    void wheelEvent(QWheelEvent* event) override; // zoom with mouse wheel
+    void mouseMoveEvent(QMouseEvent* event) override; // panning with middle mouse button
+    void mouseReleaseEvent(QMouseEvent* event) override; // stop panning when middle mouse button is released
 
 private:
     void setupUI();
@@ -65,6 +68,10 @@ private:
     QToolButton* mPolyLineTool;
     QToolButton* mAxesTool;
     std::vector<Point> tempPoints;
+
+private:
+    bool m_panning = false;
+    QPoint m_lastPanPoint;
 
 private slots:
     void onPointToolClicked();
