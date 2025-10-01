@@ -8,6 +8,7 @@
 #include <QGridLayout>
 #include <QToolBar>
 #include <QToolButton>
+#include <QMouseEvent>
 
 class Sketcher : public QMainWindow
 {
@@ -22,6 +23,11 @@ public:
 
 private:
     void setupUI();
+	bool mpointToolActive = false;
+	bool mlineToolActive = false;
+
+protected:
+	void mousePressEvent(QMouseEvent* event) override;
 
 private:
     QWidget* mCentralWidget;
@@ -36,6 +42,7 @@ private:
     QToolButton* mCircleTool;
     QToolButton* mPolygonTool;
     QToolButton* mPolyLineTool;
+	std::vector<Point> tempPoints;
 
 private slots:
     void onPointToolClicked();

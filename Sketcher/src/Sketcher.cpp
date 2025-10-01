@@ -116,11 +116,11 @@ void Sketcher::setupUI()
     // Connections
     connect(mPointTool, &QToolButton::clicked, this, &Sketcher::onPointToolClicked);
     connect(mLineTool, &QToolButton::clicked, this, &Sketcher::onLineToolClicked);
-    connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
+   /* connect(mTriangleTool, &QToolButton::clicked, this, &Sketcher::onTriangleToolClicked);
     connect(mRectangleTool, &QToolButton::clicked, this, &Sketcher::onRectangleToolClicked);
     connect(mCircleTool, &QToolButton::clicked, this, &Sketcher::onCircleToolClicked);
     connect(mPolygonTool, &QToolButton::clicked, this, &Sketcher::onPolygonToolClicked);
-    connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);
+    connect(mPolyLineTool, &QToolButton::clicked, this, &Sketcher::onPolyLineToolClicked);*/
 }
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
@@ -155,24 +155,12 @@ void Sketcher::drawPolyline(const std::vector<Point>& p)
 
 void Sketcher::onPointToolClicked()
 {
-    double x = QInputDialog::getDouble(this, "Point", "Enter X coordinate:", 0, -10000, 10000, 2);
-    double y = -QInputDialog::getDouble(this, "Point", "Enter Y coordinate:", 0, -10000, 10000, 2);
-    Point p(x, y);
-    QBrush brush(QColor("#3DB9E7"));
-    mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
+	mpointToolActive = true;
 }
 
 void Sketcher::onLineToolClicked()
 {
-    double x1 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double y1 = -QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 1st Point:", 0, -10000, 10000, 2);
-    double x2 = QInputDialog::getDouble(this, "Line", "Enter X coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    double y2 = -QInputDialog::getDouble(this, "Line", "Enter Y coordinate of 2nd Point:", 1, -10000, 10000, 2);
-    Point p1(x1, y1);
-    Point p2(x2, y2);
-    Line l(p1, p2);
-    std::vector<Point> p = l.getCoordinates();
-    drawConnectedPoints(p);
+	mlineToolActive = true;
 }
 
 void Sketcher::onTriangleToolClicked()
@@ -257,5 +245,27 @@ void Sketcher::onPolyLineToolClicked()
     PolyLine* pl = new PolyLine(verts);
     std::vector<Point> pts = pl->getCoordinates();
     drawPolyline(pts);
+}
+
+void Sketcher::mousePressEvent(QMouseEvent* event)
+{
+    QPointF pos = mCanvas->mapToScene(event->pos());
+    if(event->button() == Qt::LeftButton) {
+        if(mpointToolActive) {
+            Point p(pos.x(), pos.y());
+            QBrush brush(QColor("#3DB9E7"));
+            mScene->addEllipse(p.x - 2, p.y - 2, 4, 4, QPen(Qt::transparent), brush);
+		}
+        if(mlineToolActive) {
+            Point p(pos.x(), pos.y());
+			tempPoints.push_back(p);
+            if (tempPoints.size() == 2) {
+                Line l(tempPoints[0], tempPoints[1]);
+                std::vector<Point> pts = l.getCoordinates();
+                drawConnectedPoints(pts);
+                tempPoints.clear();
+            }
+		}
+	}
 }
 
