@@ -14,7 +14,7 @@ public:
     void setSketcher(Sketcher* s);
 
 protected:
-	void mousePressEvent(QMouseEvent* event) override; // Rituraj - Takes  mouse click position for coordinates, Pravanjan - panning with middle mouse button
+	void mousePressEvent(QMouseEvent* event) override; // Rituraj - Takes mouse click position for coordinates, Pravanjan - panning with middle mouse button
 	void keyPressEvent(QKeyEvent* event) override; // for enter - polygon/polyline finish, esc - cancel shape
 	void wheelEvent(QWheelEvent* event) override; // zoom with mouse wheel
 	void mouseMoveEvent(QMouseEvent* event) override; // panning with middle mouse button

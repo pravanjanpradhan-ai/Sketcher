@@ -131,7 +131,7 @@ void Sketcher::setupUI()
 
     setMouseTracking(true);
     //if (mCentralWidget)
-    mCentralWidget->setMouseTracking(true);
+    mCanvas->setMouseTracking(true);
 
     // Status Bar
     mStatusBar = new QStatusBar(this);
@@ -163,34 +163,42 @@ void Sketcher::setupUI()
     connect(cleanAction, &QAction::triggered, this, &Sketcher::onCleanActionTriggered);
     connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
-}
 
+   // connect(redoAction, &QGraphicsView::triggered, this, &Sketcher::mouseMoveEvent);
+	//connect(mCanvas, &QGraphicsView::setMouseTracking, this, &Sketcher::mouseMoveEvent);
+}
 
 void Sketcher::mouseMoveEvent(QMouseEvent* event)
 {
-    // Check if mouse is over the canvas
-    QPoint viewPos = mCanvas->mapFromParent(event->pos());
-    if (mCanvas->rect().contains(viewPos)) {
-        // Map to scene coordinates
-        QPointF scenePos = mCanvas->mapToScene(viewPos);
-        int x = event->pos().x();
-        int y = event->pos().y();
-       /* int x = static_cast<int>(scenePos.x());
-        int y = static_cast<int>(scenePos.y());*/
-        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
-    }
-    else {
-        mStatusLabel->setText("X: -, Y: -");
-    }
-
-    QMainWindow::mouseMoveEvent(event);
+ 
+    QPointF scenePos = mCanvas->mapToScene(event->pos());
+    int x = event->pos().x();
+    int y = event->pos().y();
+    mStatusLabel->setText(QString("Scene X: %1, Y: %2").arg(x).arg(y));
 }
+
+
 //void Sketcher::mouseMoveEvent(QMouseEvent* event)
 //{
-//    int x = event->pos().x();
-//    int y = event->pos().y();
-//    posLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+//    // Check if mouse is over the canvas
+//    QPoint viewPos = mCanvas->mapFromParent(event->pos());
+//    if (mCanvas->rect().contains(viewPos)) {
+//        // Map to scene coordinates
+//        QPointF scenePos = mCanvas->mapToScene(viewPos);
+//        int x = event->pos().x();
+//        int y = event->pos().y();
+//       /* int x = static_cast<int>(scenePos.x());
+//        int y = static_cast<int>(scenePos.y());*/
+//        mStatusLabel->setText(QString("X: %1, Y: %2").arg(x).arg(y));
+//    }
+//    else {
+//        mStatusLabel->setText("X: -, Y: -");
+//    }
+//
+//    QMainWindow::mouseMoveEvent(event);
 //}
+// 
+
 
 void Sketcher::drawConnectedPoints(std::vector<Point> p)
 {
@@ -214,15 +222,18 @@ void Sketcher::drawAxesTool()
     //Add a grid for reference
     int width = 20000;
     int height = 20000;
+    //addLine(x1, y1, x2, y2), pen).
     for (int x = -width; x <= width; x += 50)
         mScene->addLine(x, -width, x, width, QPen(Qt::lightGray));
     for (int y = -height; y <= height; y += 50)
         mScene->addLine(-height, y, height, y, QPen(Qt::lightGray));
-	
+
+    // Axes lines
+    mScene->addLine(-width, 0, width, 0, QPen(Qt::black));
+    mScene->addLine(0, -height, 0, height, QPen(Qt::black));
+
 	// Axes lines
-    /*int width = 20000;
-    int height = 20000;*/
-	double x1 = -width ;
+	/*double x1 = -width ;
 	double y1 = 0;
 	double x2 = width;
 	double y2 = 0;
@@ -252,7 +263,7 @@ void Sketcher::drawAxesTool()
     }
 	QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(shapeY);
 	itemY->setPen(QPen(Qt::blue, 1));
-	mScene->addItem(itemY);
+	mScene->addItem(itemY);*/
 
     // Draw origin point
     Point origin(0, 0);

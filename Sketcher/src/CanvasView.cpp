@@ -55,6 +55,7 @@ void CanvasView::mouseMoveEvent(QMouseEvent* event) {
         event->accept();
         return;
     }
+
     QGraphicsView::mouseMoveEvent(event);
 }
 

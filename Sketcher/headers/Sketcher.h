@@ -81,4 +81,6 @@ private slots:
     void onCleanActionTriggered();
     void onUndoActionTriggered();
     void onRedoActionTriggered();
+
+    //void mouseMoveEvent(QMouseEvent* event);
 };
