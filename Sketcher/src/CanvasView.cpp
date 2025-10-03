@@ -13,7 +13,7 @@ void CanvasView::setSketcher(Sketcher* s) {
 
 void CanvasView::mousePressEvent(QMouseEvent* event) {
     if (!mSketcher) return;
-
+    // pos() - returns the position of the mouse cursor relative to the widget that received the event.
     QPointF pos = mapToScene(event->pos());
 
     //if (event->button() == Qt::RightButton) {

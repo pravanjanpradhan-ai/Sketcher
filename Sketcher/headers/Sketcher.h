@@ -14,7 +14,6 @@
 #include <QGridLayout>
 #include <QToolBar>
 #include <QToolButton>
-#include <QVBoxLayout>
 #include "UndoRedo.h"
 #include "CanvasView.h"
 
@@ -32,8 +31,11 @@ public:
     void finishShape();
     void cancelShape();
 
-protected:
-    void mouseMoveEvent(QMouseEvent* event) override;  //Latesh -  status bar - handle mouse movement
+//protected:
+//    void mouseMoveEvent(QMouseEvent* event) override;  //Latesh -  status bar - handle mouse movement
+
+//signals:
+//      void mouseMovedOnScene(const QPointF& scenePos);   // signal to send scene coordinates
 
 private:
     void setupUI();
@@ -82,5 +84,7 @@ private slots:
     void onUndoActionTriggered();
     void onRedoActionTriggered();
 
-    //void mouseMoveEvent(QMouseEvent* event);
+
+protected slots:
+    void mouseMoveEvent(QMouseEvent* event);
 };

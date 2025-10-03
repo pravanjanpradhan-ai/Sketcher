@@ -164,14 +164,14 @@ void Sketcher::setupUI()
     connect(undoAction, &QAction::triggered, this, &Sketcher::onUndoActionTriggered);
     connect(redoAction, &QAction::triggered, this, &Sketcher::onRedoActionTriggered);
 
-   // connect(redoAction, &QGraphicsView::triggered, this, &Sketcher::mouseMoveEvent);
 	//connect(mCanvas, &QGraphicsView::setMouseTracking, this, &Sketcher::mouseMoveEvent);
+
 }
 
-void Sketcher::mouseMoveEvent(QMouseEvent* event)
+void Sketcher::mouseMoveEvent(QMouseEvent* event) //event - pointer to the QMouseEvent object
 {
- 
-    QPointF scenePos = mCanvas->mapToScene(event->pos());
+    // pos() - returns the position of the mouse cursor relative to the widget that received the event.
+	QPointF scenePos = mCanvas->mapToScene(event->pos()); 
     int x = event->pos().x();
     int y = event->pos().y();
     mStatusLabel->setText(QString("Scene X: %1, Y: %2").arg(x).arg(y));
@@ -231,39 +231,6 @@ void Sketcher::drawAxesTool()
     // Axes lines
     mScene->addLine(-width, 0, width, 0, QPen(Qt::black));
     mScene->addLine(0, -height, 0, height, QPen(Qt::black));
-
-	// Axes lines
-	/*double x1 = -width ;
-	double y1 = 0;
-	double x2 = width;
-	double y2 = 0;
-    Point px1(x1, y1);
-    Point px2(x2, y2);
-    Line* xAxes = new Line(px1, px2);
-    std::vector<Point> px = xAxes->getCoordinates();
-    QPolygonF shapeX;
-    for (int i = 0; i < px.size(); i++) {
-        shapeX << QPointF(px[i].x, px[i].y);
-    }
-    QGraphicsPolygonItem* itemX = new QGraphicsPolygonItem(shapeX);
-    itemX->setPen(QPen(Qt::blue, 1));
-    mScene->addItem(itemX);
-
-	double x3 = 0;
-	double y3 = -height;
-	double x4 = 0;
-    double y4 = height;
-    Point py1(x3, y3);
-    Point py2(x4, y4);
-    Line* yAxes = new Line(py1, py2);
-    std::vector<Point> py = yAxes->getCoordinates();
-    QPolygonF shapeY;
-    for (int i = 0; i < py.size(); i++) {
-        shapeY << QPointF(py[i].x, py[i].y);
-    }
-	QGraphicsPolygonItem* itemY = new QGraphicsPolygonItem(shapeY);
-	itemY->setPen(QPen(Qt::blue, 1));
-	mScene->addItem(itemY);*/
 
     // Draw origin point
     Point origin(0, 0);
@@ -410,7 +377,7 @@ void Sketcher::handleCanvasClick(QPointF pos) {
     case ToolType::PolyLine:
         // here you can collect multiple clicks until user presses "Enter" or right-clicks
         tempPoints.push_back(p);
-        break;
+        break; 
 
     default: break;
     }
