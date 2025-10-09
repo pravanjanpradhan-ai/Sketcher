@@ -17,7 +17,7 @@
 #include "UndoRedo.h"
 #include "CanvasView.h"
 
-using SketchData = std::variant<Shape*, Point>;
+//using SketchData = std::variant<Shape*, Point>;
 class Sketcher : public QMainWindow
 {
     Q_OBJECT
@@ -26,23 +26,13 @@ public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
     void drawConnectedPoints(std::vector<Point> p);
-    void drawAxesTool();
     void handleCanvasClick(QPointF pos);
     void finishShape();
     void cancelShape();
 
-//protected:
-//    void mouseMoveEvent(QMouseEvent* event) override;  //Latesh -  status bar - handle mouse movement
-
-//signals:
-//      void mouseMovedOnScene(const QPointF& scenePos);   // signal to send scene coordinates
-
 private:
     void setupUI();
-    std::unordered_map<int, std::vector<SketchData>> mShapes;
-    int mShapeId = 0;
-    bool isSave = false;
-    UndoRedoManager* mUndoRedo = new UndoRedoManager();
+    //std::unordered_map<int, std::vector<SketchData>> mShapes;
     enum class ToolType { None, Point, Line, Triangle, Rectangle, Circle, Polygon, PolyLine };
     ToolType mCurrentTool = ToolType::None;
 
@@ -75,16 +65,4 @@ private slots:
     void onCircleToolClicked();
     void onPolygonToolClicked();
     void onPolyLineToolClicked();
-
-    void onNewActionTriggered();
-    void onOpenActionTriggered();
-    void onSaveActionTriggered();
-
-    void onCleanActionTriggered();
-    void onUndoActionTriggered();
-    void onRedoActionTriggered();
-
-
-protected slots:
-    void mouseMoveEvent(QMouseEvent* event);
 };
