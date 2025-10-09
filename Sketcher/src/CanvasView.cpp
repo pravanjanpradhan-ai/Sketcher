@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "CanvasView.h"
-#include "Sketcher.h"   // Needed for calling Sketcher methods
 
 CanvasView::CanvasView(QGraphicsScene* scene, QWidget* parent)
     : QGraphicsView(scene, parent), mSketcher(nullptr) {
@@ -12,7 +11,7 @@ void CanvasView::setSketcher(Sketcher* s) {
 }
 
 void CanvasView::mousePressEvent(QMouseEvent* event) {
-    if (!mSketcher) return;
+
     // pos() - returns the position of the mouse cursor relative to the widget that received the event.
     QPointF pos = mapToScene(event->pos());
 
@@ -22,7 +21,7 @@ void CanvasView::mousePressEvent(QMouseEvent* event) {
     //}
     if (event->button() == Qt::LeftButton) {
         // Left click -> add point
-        mSketcher->handleCanvasClick(pos);
+        mDrawShape->handleCanvasClick(pos);
     }
     if (event->button() == Qt::MiddleButton) {
         m_panning = true;
@@ -70,13 +69,12 @@ void CanvasView::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void CanvasView::keyPressEvent(QKeyEvent* event) {
-    if (!mSketcher) return;
 
     if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
-        mSketcher->finishShape();
+        mDrawShape->finishShape();
     }
     else if (event->key() == Qt::Key_Escape) {
-        mSketcher->cancelShape();
+        mDrawShape->cancelShape();
     }
     else {
         QGraphicsView::keyPressEvent(event);

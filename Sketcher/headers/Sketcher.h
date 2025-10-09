@@ -8,7 +8,6 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include "Point.h"
-#include "Shape.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGridLayout>
@@ -25,10 +24,12 @@ class Sketcher : public QMainWindow
 public:
     Sketcher(QWidget* parent = nullptr);
     ~Sketcher();
-    void drawConnectedPoints(std::vector<Point> p);
+    /*void drawConnectedPoints(std::vector<Point> p);
     void handleCanvasClick(QPointF pos);
     void finishShape();
-    void cancelShape();
+    void cancelShape();*/
+
+    QGraphicsScene* mScene;
 
 private:
     void setupUI();
@@ -38,8 +39,8 @@ private:
 
 private:
     QWidget* mCentralWidget;
-    QGraphicsView* mCanvas;
-    QGraphicsScene* mScene;
+    CanvasView* mCanvas;
+    
     QGridLayout* mCentralgridWidget;
     QToolBar* mToolBar;
 	QMenuBar* mMenuBar;
@@ -55,7 +56,6 @@ private:
     QToolButton* mPolygonTool; 
     QToolButton* mPolyLineTool;
     QToolButton* mAxesTool;
-    std::vector<Point> tempPoints;
 
 private slots:
     void onPointToolClicked();

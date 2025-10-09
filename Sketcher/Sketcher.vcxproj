@@ -124,6 +124,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CanvasView.cpp" />
+    <ClCompile Include="src\DrawShape.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Sketcher.cpp" />
     <ClCompile Include="src\stdafx.cpp">
@@ -137,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="headers\CanvasView.h" />
+    <ClInclude Include="headers\DrawShape.h" />
     <ClInclude Include="headers\stdafx.h" />
     <ClInclude Include="headers\UndoRedo.h" />
   </ItemGroup>

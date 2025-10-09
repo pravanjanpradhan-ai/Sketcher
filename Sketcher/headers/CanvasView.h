@@ -3,8 +3,8 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QKeyEvent>
-
-class Sketcher;  // Forward declaration
+#include "DrawShape.h"
+#include "Sketcher.h"
 
 class CanvasView : public QGraphicsView {
     Q_OBJECT
@@ -26,4 +26,5 @@ private:
 
 private:
     Sketcher* mSketcher;
+	DrawShape* mDrawShape;
 };

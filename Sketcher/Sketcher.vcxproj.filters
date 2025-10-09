@@ -43,6 +43,9 @@
     <ClCompile Include="src\UndoRedo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\DrawShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="headers\Sketcher.h">
@@ -57,6 +60,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="headers\UndoRedo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\DrawShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
