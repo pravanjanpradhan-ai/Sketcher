@@ -19,5 +19,5 @@ public:
 
     // Common method
     std::string getName() const;
-    virtual std::vector<Point> getCoordinates() const=0;
+    virtual std::vector<Point> getCoordinates() const = 0;
 };

@@ -128,7 +128,7 @@ void Sketcher::setupUI()
     mToolBar->addWidget(mAxesTool);
 
 
-
+    
     setMouseTracking(true);
     //if (mCentralWidget)
     mCanvas->setMouseTracking(true);
@@ -138,7 +138,7 @@ void Sketcher::setupUI()
     setStatusBar(mStatusBar);
     posLabel = new QLabel(this);
     //posLabel = new QLabel("X: 0, Y: 0", this);
-    mStatusBar->showMessage("Application Started");
+    
     // status bar label for mouse position
     mStatusBar->addPermanentWidget(posLabel);
     // Add a permanent widget (label)
